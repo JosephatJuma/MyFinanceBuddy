@@ -4,13 +4,14 @@ A comprehensive personal finance management mobile app built with React Native a
 
 ## ✨ Features
 
-- 🔐 **Authentication** - Secure login, registration, and password recovery
+- 🔐 **Authentication** - Secure login, registration, and password recovery with Supabase
 - 📊 **Dashboard** - Overview of your financial status
 - 💰 **Transactions** - Track income and expenses
 - 📅 **Budget Management** - Set and monitor budgets
 - 📈 **Reports** - Visual financial reports and analytics
 - ⚙️ **Settings** - Customizable preferences and dark mode
 - 🎨 **Theme Support** - Light and dark mode with persistent preferences
+- 🔒 **Row Level Security** - Your data is protected with Supabase RLS policies
 
 ## 🏗️ Architecture
 
@@ -41,12 +42,22 @@ A comprehensive personal finance management mobile app built with React Native a
 - npm or yarn
 - Expo CLI
 - iOS Simulator or Android Emulator
+- **Supabase account** (for authentication and database)
 
 ### Installation
 
 ```bash
 # Install dependencies
 npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env and add your Supabase credentials
+```
+
+**Important:** Before running the app, you must set up Supabase. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed instructions.
+
+### Quick Start
 
 # Start the development server
 npm start
@@ -98,6 +109,7 @@ src/
 - **React Navigation** - Navigation library
 - **React Native Paper** - UI component library
 - **TypeScript** - Type safety
+- **Supabase** - Backend as a Service (Auth, Database, Storage)
 - **AsyncStorage** - Local storage
 
 ## 🎨 Customization

@@ -16,6 +16,9 @@ interface AuthContextType extends AuthState {
   updateUser: (
     updates: Partial<User>
   ) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (
+    email: string
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

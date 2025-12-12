@@ -39,7 +39,7 @@ export interface Transaction {
   id: string;
   userId: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   category: string;
   description: string;
   date: Date;
@@ -52,7 +52,7 @@ export interface Budget {
   userId: string;
   category: string;
   amount: number;
-  period: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  period: "daily" | "weekly" | "monthly" | "yearly";
   startDate: Date;
   endDate?: Date;
   spent: number;
@@ -63,15 +63,15 @@ export interface Budget {
 export interface Category {
   id: string;
   name: string;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   icon?: string;
   color?: string;
 }
 
 export interface Report {
   id: string;
-  type: 'spending' | 'income' | 'category' | 'trend';
-  period: 'week' | 'month' | 'year' | 'custom';
+  type: "spending" | "income" | "category" | "trend";
+  period: "week" | "month" | "year" | "custom";
   data: any;
   generatedAt: Date;
 }
@@ -113,7 +113,7 @@ export interface RegisterFormData {
 
 export interface TransactionFormData {
   amount: string;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   category: string;
   description: string;
   date: Date;
@@ -122,7 +122,7 @@ export interface TransactionFormData {
 export interface BudgetFormData {
   category: string;
   amount: string;
-  period: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  period: "daily" | "weekly" | "monthly" | "yearly";
   startDate: Date;
 }
 
@@ -142,7 +142,7 @@ export interface AuthState {
 }
 
 export interface ThemeState {
-  mode: 'light' | 'dark' | 'auto';
+  mode: "light" | "dark" | "auto";
   isDark: boolean;
 }
 
@@ -150,7 +150,7 @@ export interface ThemeState {
 // Utility Types
 // ============================================
 
-export type AsyncStatus = 'idle' | 'loading' | 'success' | 'error';
+export type AsyncStatus = "idle" | "loading" | "success" | "error";
 
 export interface AsyncState<T> {
   status: AsyncStatus;
@@ -170,7 +170,9 @@ export interface UseFormReturn<T> {
   setValue: (name: keyof T, value: any) => void;
   setFieldTouched: (name: keyof T, touched: boolean) => void;
   setFieldError: (name: keyof T, error: string | null) => void;
-  handleSubmit: (onSubmit: (values: T) => void | Promise<void>) => (e?: any) => Promise<void>;
+  handleSubmit: (
+    onSubmit: (values: T) => void | Promise<void>
+  ) => (e?: any) => Promise<void>;
   reset: () => void;
   validateAll: () => boolean;
   getFieldProps: (name: keyof T) => any;
@@ -213,10 +215,15 @@ export interface CardProps {
 // Constants
 // ============================================
 
-export const TRANSACTION_TYPES = ['income', 'expense'] as const;
-export const BUDGET_PERIODS = ['daily', 'weekly', 'monthly', 'yearly'] as const;
-export const REPORT_TYPES = ['spending', 'income', 'category', 'trend'] as const;
+export const TRANSACTION_TYPES = ["income", "expense"] as const;
+export const BUDGET_PERIODS = ["daily", "weekly", "monthly", "yearly"] as const;
+export const REPORT_TYPES = [
+  "spending",
+  "income",
+  "category",
+  "trend",
+] as const;
 
-export type TransactionType = typeof TRANSACTION_TYPES[number];
-export type BudgetPeriod = typeof BUDGET_PERIODS[number];
-export type ReportType = typeof REPORT_TYPES[number];
+export type TransactionType = (typeof TRANSACTION_TYPES)[number];
+export type BudgetPeriod = (typeof BUDGET_PERIODS)[number];
+export type ReportType = (typeof REPORT_TYPES)[number];

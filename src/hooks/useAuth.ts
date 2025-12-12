@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "../lib/supabase";
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  token?: string;
+  avatar_url?: string;
+  created_at?: string;
 }
 
 export interface AuthState {
@@ -25,26 +26,39 @@ export const useAuth = () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      // TODO: Replace with actual API call
-      const response = await mockLogin(email, password);
-
-      const user: User = {
-        id: response.id,
-        email: response.email,
-        name: response.name,
-        token: response.token,
-      };
-
-      await AsyncStorage.setItem("user", JSON.stringify(user));
-      await AsyncStorage.setItem("token", response.token);
-
-      setAuthState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      return { success: true };
+      if (error) throw error;
+
+      if (data.user) {
+        // Fetch user profile from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+
+        const user: User = {
+          id: data.user.id,
+          email: data.user.email || email,
+          name: profile?.name || data.user.user_metadata?.name || "User",
+          avatar_url: profile?.avatar_url,
+          created_at: data.user.created_at,
+        };
+
+        setAuthState({
+          user,
+          isLoading: false,
+          isAuthenticated: true,
+        });
+
+        return { success: true };
+      }
+
+      throw new Error("Login failed");
     } catch (error) {
       setAuthState((prev) => ({ ...prev, isLoading: false }));
       return {
@@ -59,26 +73,53 @@ export const useAuth = () => {
       try {
         setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-        // TODO: Replace with actual API call
-        const response = await mockRegister(name, email, password);
-
-        const user: User = {
-          id: response.id,
-          email: response.email,
-          name: response.name,
-          token: response.token,
-        };
-
-        await AsyncStorage.setItem("user", JSON.stringify(user));
-        await AsyncStorage.setItem("token", response.token);
-
-        setAuthState({
-          user,
-          isLoading: false,
-          isAuthenticated: true,
+        // Sign up the user
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name,
+            },
+          },
         });
 
-        return { success: true };
+        if (error) throw error;
+
+        if (data.user) {
+          // Create profile in profiles table
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert([
+              {
+                id: data.user.id,
+                name,
+                email,
+                created_at: new Date().toISOString(),
+              },
+            ]);
+
+          if (profileError) {
+            console.error("Profile creation error:", profileError);
+          }
+
+          const user: User = {
+            id: data.user.id,
+            email: data.user.email || email,
+            name,
+            created_at: data.user.created_at,
+          };
+
+          setAuthState({
+            user,
+            isLoading: false,
+            isAuthenticated: true,
+          });
+
+          return { success: true };
+        }
+
+        throw new Error("Registration failed");
       } catch (error) {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
         return {
@@ -92,8 +133,9 @@ export const useAuth = () => {
 
   const logout = useCallback(async () => {
     try {
-      await AsyncStorage.removeItem("user");
-      await AsyncStorage.removeItem("token");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
 
       setAuthState({
         user: null,
@@ -112,11 +154,24 @@ export const useAuth = () => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const userString = await AsyncStorage.getItem("user");
-      const token = await AsyncStorage.getItem("token");
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (userString && token) {
-        const user: User = JSON.parse(userString);
+      if (session?.user) {
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        const user: User = {
+          id: session.user.id,
+          email: session.user.email || "",
+          name: profile?.name || session.user.user_metadata?.name || "User",
+          avatar_url: profile?.avatar_url,
+          created_at: session.user.created_at,
+        };
+
         setAuthState({
           user,
           isLoading: false,
@@ -130,6 +185,7 @@ export const useAuth = () => {
         });
       }
     } catch (error) {
+      console.error("Auth check error:", error);
       setAuthState({
         user: null,
         isLoading: false,
@@ -144,8 +200,18 @@ export const useAuth = () => {
         if (!authState.user)
           return { success: false, error: "No user logged in" };
 
+        // Update profile in Supabase
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            name: updates.name,
+            avatar_url: updates.avatar_url,
+          })
+          .eq("id", authState.user.id);
+
+        if (error) throw error;
+
         const updatedUser = { ...authState.user, ...updates };
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
 
         setAuthState((prev) => ({
           ...prev,
@@ -163,6 +229,23 @@ export const useAuth = () => {
     [authState.user]
   );
 
+  const resetPassword = useCallback(async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'myfinancebuddy://reset-password',
+      });
+
+      if (error) throw error;
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Password reset failed",
+      };
+    }
+  }, []);
+
   return {
     ...authState,
     login,
@@ -170,32 +253,11 @@ export const useAuth = () => {
     logout,
     checkAuth,
     updateUser,
+    resetPassword,
   };
 };
 
-// Mock API functions - Replace with actual API calls
-const mockLogin = async (email: string, password: string) => {
-  return new Promise<{
-    id: string;
-    email: string;
-    name: string;
-    token: string;
-  }>((resolve, reject) => {
-    setTimeout(() => {
-      if (email && password) {
-        resolve({
-          id: "1",
-          email,
-          name: "Test User",
-          token: "mock-token-" + Date.now(),
-        });
-      } else {
-        reject(new Error("Invalid credentials"));
-      }
-    }, 1000);
-  });
-};
-
+// No more mock functions - using real Supabase authentication
 const mockRegister = async (name: string, email: string, password: string) => {
   return new Promise<{
     id: string;

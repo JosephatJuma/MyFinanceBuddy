@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, TextInput, Button, Card } from "react-native-paper";
+import { Text, TextInput, Button, Card, Snackbar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
 
 const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useThemeContext();
+  const { resetPassword } = useAuthContext();
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const form = useForm({
     email: {
@@ -22,10 +26,19 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   const handleResetPassword = form.handleSubmit(async (values) => {
-    // TODO: Implement password reset logic
-    console.log("Reset password for:", values.email);
-    // Show success message and navigate back
-    navigation.goBack();
+    const result = await resetPassword(values.email);
+    
+    if (result.success) {
+      setSnackbarMessage("Password reset email sent! Check your inbox.");
+      setSnackbarVisible(true);
+      
+      // Navigate back after showing success message
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+    } else {
+      form.setFieldError("email", result.error || "Failed to send reset email");
+    }
   });
 
   return (
@@ -69,6 +82,18 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
           </Button>
         </Card.Content>
       </Card>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: 'OK',
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };

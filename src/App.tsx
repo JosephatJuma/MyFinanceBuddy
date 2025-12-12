@@ -1,6 +1,11 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
+import {
+  KeyboardAvoidingView,
+  StyleSheet,
+  Platform,
+  Keyboard,
+} from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -26,16 +31,36 @@ function AppContent() {
 }
 
 export default function App() {
+  const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
+
+  Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardVisible(false);
+  });
+
+  Keyboard.addListener("keyboardDidShow", () => {
+    setKeyboardVisible(true);
+  });
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <KeyboardAvoidingView
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : isKeyboardVisible
+          ? "height"
+          : undefined
+      }
+      style={{ flex: 1 }}
+    >
+      <GestureHandlerRootView style={styles.container}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </KeyboardAvoidingView>
   );
 }
 

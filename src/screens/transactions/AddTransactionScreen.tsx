@@ -1,10 +1,14 @@
 import React from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, TextInput, Button, Card } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { TransactionsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { useForm } from "../../hooks/useForm";
+import SelectInput from "../../components/forms/SelectInput";
+import { EXPENSE_CATEGORIES } from "../../constants/options";
+import DateInput from "../../components/forms/DateInput";
+import TextInput from "../../components/forms/TextInput";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -66,12 +70,19 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
               {...form.getFieldProps("description")}
               style={styles.input}
             />
+            <DateInput
+              label="Date"
+              mode="outlined"
+              {...form.getFieldProps("date")}
+              //style={styles.input}
+            />
 
-            <TextInput
+            <SelectInput
+              options={EXPENSE_CATEGORIES}
               label="Category"
               mode="outlined"
               {...form.getFieldProps("category")}
-              style={styles.input}
+              //style={styles.input}
             />
 
             <Button

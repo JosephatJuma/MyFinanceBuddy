@@ -55,7 +55,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const handleRegister = form.handleSubmit(async (values) => {
     const result = await register(values.name, values.email, values.password);
     if (!result.success) {
-      setSnackbarMessage(result.error || "Registration failed. Please try again.");
+      setSnackbarMessage(
+        result.error || "Registration failed. Please try again."
+      );
       setSnackbarVisible(true);
       form.setFieldError("email", result.error || "Registration failed");
     } else {

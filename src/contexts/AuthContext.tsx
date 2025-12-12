@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, ReactNode, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  ReactNode,
+  useState,
+} from "react";
 import { useAuth, AuthState, User } from "../hooks/useAuth";
 import { supabase } from "../lib/supabase";
 import AuthLoadingScreen from "../components/reusable/AuthLoadingScreen";
@@ -58,31 +64,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
 
     // Set up Supabase auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Supabase auth state changed:", event);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Supabase auth state changed:", event);
 
-        if (event === "SIGNED_IN" && session?.user) {
-          // User signed in - refresh auth state
-          await auth.checkAuth();
-        } else if (event === "SIGNED_OUT") {
-          // User signed out - clear auth state
-          await auth.logout();
-        } else if (event === "TOKEN_REFRESHED" && session?.user) {
-          // Token refreshed - update auth state
-          await auth.checkAuth();
-        } else if (event === "PASSWORD_RECOVERY") {
-          // Handle password recovery if needed
-          console.log("Password recovery initiated");
-        } else if (event === "USER_UPDATED" && session?.user) {
-          // User updated - refresh auth state
-          await auth.checkAuth();
-        } else if (!session) {
-          // No session found - ensure logged out state
-          await auth.logout();
-        }
+      if (event === "SIGNED_IN" && session?.user) {
+        // User signed in - refresh auth state
+        await auth.checkAuth();
+      } else if (event === "SIGNED_OUT") {
+        // User signed out - clear auth state
+        await auth.logout();
+      } else if (event === "TOKEN_REFRESHED" && session?.user) {
+        // Token refreshed - update auth state
+        await auth.checkAuth();
+      } else if (event === "PASSWORD_RECOVERY") {
+        // Handle password recovery if needed
+        console.log("Password recovery initiated");
+      } else if (event === "USER_UPDATED" && session?.user) {
+        // User updated - refresh auth state
+        await auth.checkAuth();
+      } else if (!session) {
+        // No session found - ensure logged out state
+        await auth.logout();
       }
-    );
+    });
 
     // Cleanup subscription on unmount
     return () => {

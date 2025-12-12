@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, TextInput, Button, Card, Snackbar } from "react-native-paper";
+import { Text, Button, Card, Snackbar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
+import TextInput from "../../components/forms/TextInput";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
 
@@ -59,7 +60,6 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("email")}
             keyboardType="email-address"
-            autoCapitalize="none"
             style={styles.input}
           />
 

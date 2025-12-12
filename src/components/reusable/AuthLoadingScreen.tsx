@@ -8,10 +8,7 @@ const AuthLoadingScreen: React.FC = () => {
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ActivityIndicator size="large" color={theme.colors.primary} />
       <Text

@@ -1,17 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, TextInput, Button, Card } from "react-native-paper";
+import { Text, Button, Card, Snackbar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
+import TextInput from "../../components/forms/TextInput";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { register } = useAuthContext();
   const { theme } = useThemeContext();
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const form = useForm({
     name: {
@@ -52,7 +55,12 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const handleRegister = form.handleSubmit(async (values) => {
     const result = await register(values.name, values.email, values.password);
     if (!result.success) {
+      setSnackbarMessage(result.error || "Registration failed. Please try again.");
+      setSnackbarVisible(true);
       form.setFieldError("email", result.error || "Registration failed");
+    } else {
+      setSnackbarMessage("Account created successfully!");
+      setSnackbarVisible(true);
     }
   });
 
@@ -81,7 +89,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("email")}
             keyboardType="email-address"
-            autoCapitalize="none"
             style={styles.input}
           />
 
@@ -89,7 +96,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             label="Password"
             mode="outlined"
             {...form.getFieldProps("password")}
-            secureTextEntry
+            isPass
             style={styles.input}
           />
 
@@ -97,7 +104,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             label="Confirm Password"
             mode="outlined"
             {...form.getFieldProps("confirmPassword")}
-            secureTextEntry
+            isPass
             style={styles.input}
           />
 
@@ -120,6 +127,18 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           </Button>
         </Card.Content>
       </Card>
+
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: "OK",
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </ScrollView>
   );
 };

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-
+import { useNavigation } from "@react-navigation/native";
 export interface User {
   id: string;
   email: string;
@@ -21,6 +21,7 @@ export const useAuth = () => {
     isLoading: true,
     isAuthenticated: false,
   });
+  // const navigation = useNavigation();
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -30,6 +31,8 @@ export const useAuth = () => {
         email,
         password,
       });
+
+      console.log(data);
 
       if (error) throw error;
 
@@ -60,6 +63,7 @@ export const useAuth = () => {
 
       throw new Error("Login failed");
     } catch (error) {
+      console.log(error);
       setAuthState((prev) => ({ ...prev, isLoading: false }));
       return {
         success: false,
@@ -142,6 +146,8 @@ export const useAuth = () => {
         isLoading: false,
         isAuthenticated: false,
       });
+      //navigation?.replace("Auth");
+      console.log("Navigation Back");
 
       return { success: true };
     } catch (error) {
@@ -154,38 +160,60 @@ export const useAuth = () => {
 
   const checkAuth = useCallback(async () => {
     try {
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
       const {
         data: { session },
+        error: sessionError,
       } = await supabase.auth.getSession();
 
-      if (session?.user) {
-        // Fetch user profile
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
-
-        const user: User = {
-          id: session.user.id,
-          email: session.user.email || "",
-          name: profile?.name || session.user.user_metadata?.name || "User",
-          avatar_url: profile?.avatar_url,
-          created_at: session.user.created_at,
-        };
-
-        setAuthState({
-          user,
-          isLoading: false,
-          isAuthenticated: true,
-        });
-      } else {
+      // Handle session error
+      if (sessionError) {
+        console.error("Session error:", sessionError);
         setAuthState({
           user: null,
           isLoading: false,
           isAuthenticated: false,
         });
+        return;
       }
+
+      // Handle no session found
+      if (!session?.user) {
+        console.log("No active Supabase session found");
+        setAuthState({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+        });
+        return;
+      }
+
+      // Session found - fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profileError && profileError.code !== "PGRST116") {
+        // PGRST116 = no rows returned (profile doesn't exist yet)
+        console.error("Profile fetch error:", profileError);
+      }
+
+      const user: User = {
+        id: session.user.id,
+        email: session.user.email || "",
+        name: profile?.name || session.user.user_metadata?.name || "User",
+        avatar_url: profile?.avatar_url,
+        created_at: session.user.created_at,
+      };
+
+      setAuthState({
+        user,
+        isLoading: false,
+        isAuthenticated: true,
+      });
     } catch (error) {
       console.error("Auth check error:", error);
       setAuthState({
@@ -257,27 +285,4 @@ export const useAuth = () => {
     updateUser,
     resetPassword,
   };
-};
-
-// No more mock functions - using real Supabase authentication
-const mockRegister = async (name: string, email: string, password: string) => {
-  return new Promise<{
-    id: string;
-    email: string;
-    name: string;
-    token: string;
-  }>((resolve, reject) => {
-    setTimeout(() => {
-      if (name && email && password) {
-        resolve({
-          id: Date.now().toString(),
-          email,
-          name,
-          token: "mock-token-" + Date.now(),
-        });
-      } else {
-        reject(new Error("Invalid data"));
-      }
-    }, 1000);
-  });
 };

@@ -216,6 +216,8 @@ export const useForm = <T extends FormValues>(config: FormConfig) => {
     return Object.values(errors).every((error) => !error);
   }, [errors]);
 
+  console.log(values);
+
   return {
     values,
     errors,

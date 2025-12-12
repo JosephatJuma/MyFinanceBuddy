@@ -6,6 +6,7 @@ import { HomeStackParamList } from "./types";
 import DashboardScreen from "../screens/home/DashboardScreen";
 import TransactionDetailScreen from "../screens/transactions/TransactionDetailScreen";
 import AddTransactionScreen from "../screens/transactions/AddTransactionScreen";
+import HomeHeader from "../components/reusable/HomeHeader";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -13,7 +14,7 @@ export const HomeStackNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         animation: "slide_from_right",
       }}
     >

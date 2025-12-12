@@ -9,18 +9,23 @@ import { TransactionsStackNavigator } from "./TransactionsStackNavigator";
 import { BudgetStackNavigator } from "./BudgetStackNavigator";
 import { ReportsStackNavigator } from "./ReportsStackNavigator";
 import { SettingsStackNavigator } from "./SettingsStackNavigator";
-
+import { useTheme } from "react-native-paper";
+import HomeHeader from "../components/reusable/HomeHeader";
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 export const DrawerNavigator = () => {
+  const { colors } = useTheme();
   return (
     <Drawer.Navigator
       screenOptions={{
-        headerShown: false,
-        drawerType: "front",
+        headerShown: true,
+        header: (props) => <HomeHeader props={props} />,
+        drawerType: "slide",
         drawerStyle: {
           width: 280,
+          backgroundColor: colors.background,
         },
+        drawerInactiveTintColor: colors.primary,
       }}
       initialRouteName="Home"
     >

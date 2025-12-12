@@ -12,7 +12,7 @@ export const ReportsStackNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         animation: "slide_from_right",
       }}
     >

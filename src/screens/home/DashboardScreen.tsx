@@ -1,10 +1,11 @@
 import React from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Card, FAB } from "react-native-paper";
+import { Text, Card, FAB, Appbar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
+import HomeHeader from "../../components/reusable/HomeHeader";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Dashboard">;
 

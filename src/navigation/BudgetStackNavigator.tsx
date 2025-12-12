@@ -14,7 +14,7 @@ export const BudgetStackNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         animation: "slide_from_right",
       }}
     >

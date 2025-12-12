@@ -193,11 +193,13 @@ create trigger budgets_updated_at
 ## Step 6: Test Authentication
 
 1. Start your development server:
+
 ```bash
 npm start
 ```
 
 2. Try registering a new account:
+
    - Open the app
    - Click "Create Account"
    - Fill in the form
@@ -212,26 +214,31 @@ npm start
 ## Features Implemented
 
 ### ✅ User Registration
+
 - Creates user in Supabase Auth
 - Automatically creates profile in `profiles` table
 - Stores user metadata (name)
 
 ### ✅ User Login
+
 - Email/password authentication
 - Fetches user profile from database
 - Maintains session with AsyncStorage
 
 ### ✅ Password Reset
+
 - Sends password reset email via Supabase
 - Customizable email template
 - Secure reset flow
 
 ### ✅ User Logout
+
 - Signs out from Supabase
 - Clears local session
 - Redirects to login screen
 
 ### ✅ Session Management
+
 - Automatic session refresh
 - Persistent login across app restarts
 - Secure token storage
@@ -274,6 +281,7 @@ auth.uid() = user_id
 ```
 
 This means:
+
 - No user can see another user's transactions
 - No user can modify another user's budgets
 - All data access is automatically filtered by user ID
@@ -294,25 +302,27 @@ This means:
 const { updateUser } = useAuthContext();
 
 await updateUser({
-  name: 'New Name',
-  avatar_url: 'https://example.com/avatar.jpg'
+  name: "New Name",
+  avatar_url: "https://example.com/avatar.jpg",
 });
 ```
 
 ### Add More Fields to Profile
 
 1. Add column in Supabase:
+
 ```sql
 alter table profiles add column phone text;
 ```
 
 2. Update the User interface in `src/hooks/useAuth.ts`:
+
 ```typescript
 export interface User {
   id: string;
   email: string;
   name: string;
-  phone?: string;  // Add new field
+  phone?: string; // Add new field
   avatar_url?: string;
   created_at?: string;
 }
@@ -321,19 +331,23 @@ export interface User {
 ## Troubleshooting
 
 ### "Invalid API key" error
+
 - Check that your `.env` file has the correct values
 - Restart the development server after changing `.env`
 
 ### "User already exists" error
+
 - The email is already registered
 - Try logging in instead or use a different email
 
 ### Profile not created automatically
+
 - Check the trigger is created: `on_auth_user_created`
 - Check the function exists: `handle_new_user()`
 - Look for errors in Supabase Dashboard > Database > Logs
 
 ### Session not persisting
+
 - Check AsyncStorage permissions
 - Make sure `react-native-url-polyfill` is installed
 - Clear app data and try again
@@ -356,6 +370,7 @@ export interface User {
 ## Support
 
 If you encounter issues:
+
 1. Check the [Supabase Status](https://status.supabase.com/)
 2. Visit [Supabase Discord](https://discord.supabase.com/)
 3. Check the [GitHub Issues](https://github.com/supabase/supabase/issues)

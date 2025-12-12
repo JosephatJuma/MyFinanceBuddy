@@ -60,44 +60,51 @@ cp .env.example .env
 ### Quick Start
 
 # Start the development server
+
 npm start
 
 # Run on iOS
+
 npm run ios
 
 # Run on Android
+
 npm run android
+
 ```
 
 ## 📁 Project Structure
 
 ```
+
 src/
-├── navigation/          # Navigation configuration
-│   ├── RootNavigator.tsx
-│   ├── AuthNavigator.tsx
-│   ├── DrawerNavigator.tsx
-│   └── *StackNavigator.tsx
-├── contexts/           # React contexts
-│   ├── AuthContext.tsx
-│   └── ThemeContext.tsx
-├── hooks/              # Custom hooks
-│   ├── useAuth.ts
-│   ├── useTheme.ts
-│   ├── useForm.ts
-│   └── useStorage.ts
-├── screens/            # Screen components
-│   ├── auth/
-│   ├── home/
-│   ├── transactions/
-│   ├── budget/
-│   ├── reports/
-│   └── settings/
-└── components/         # Reusable components
-```
+├── navigation/ # Navigation configuration
+│ ├── RootNavigator.tsx
+│ ├── AuthNavigator.tsx
+│ ├── DrawerNavigator.tsx
+│ └── \*StackNavigator.tsx
+├── contexts/ # React contexts
+│ ├── AuthContext.tsx
+│ └── ThemeContext.tsx
+├── hooks/ # Custom hooks
+│ ├── useAuth.ts
+│ ├── useTheme.ts
+│ ├── useForm.ts
+│ └── useStorage.ts
+├── screens/ # Screen components
+│ ├── auth/
+│ ├── home/
+│ ├── transactions/
+│ ├── budget/
+│ ├── reports/
+│ └── settings/
+└── components/ # Reusable components
+
+````
 
 ## 📚 Documentation
 
+- **[Supabase Setup](SUPABASE_SETUP.md)** - Complete Supabase configuration guide
 - **[Setup Guide](SETUP_GUIDE.md)** - Comprehensive setup and usage guide
 - **[Quick Reference](QUICK_REFERENCE.md)** - Quick reference for common tasks
 - **[Hooks Example](HOOKS_EXAMPLE.tsx)** - Example usage of all custom hooks
@@ -135,7 +142,7 @@ const form = useForm({
     },
   },
 });
-```
+````
 
 ### Theme Customization
 

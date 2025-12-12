@@ -27,11 +27,11 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleResetPassword = form.handleSubmit(async (values) => {
     const result = await resetPassword(values.email);
-    
+
     if (result.success) {
       setSnackbarMessage("Password reset email sent! Check your inbox.");
       setSnackbarVisible(true);
-      
+
       // Navigate back after showing success message
       setTimeout(() => {
         navigation.goBack();
@@ -88,7 +88,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
         action={{
-          label: 'OK',
+          label: "OK",
           onPress: () => setSnackbarVisible(false),
         }}
       >

@@ -134,7 +134,7 @@ export const useAuth = () => {
   const logout = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) throw error;
 
       setAuthState({
@@ -154,7 +154,9 @@ export const useAuth = () => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session?.user) {
         // Fetch user profile
@@ -232,7 +234,7 @@ export const useAuth = () => {
   const resetPassword = useCallback(async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'myfinancebuddy://reset-password',
+        redirectTo: "myfinancebuddy://reset-password",
       });
 
       if (error) throw error;

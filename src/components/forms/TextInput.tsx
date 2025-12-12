@@ -1,19 +1,20 @@
 import {
   TextInput as PTextInput,
   HelperText,
-  TextInputProps,
+  TextInputProps as PaperTextInputProps,
 } from "react-native-paper";
 import React, { useState } from "react";
 import { useTheme } from "../../hooks";
 
-interface TextInputComponentProps extends TextInputProps {
+interface TextInputComponentProps extends Omit<PaperTextInputProps, "error"> {
   label: string;
   placeholder?: string;
-  value: string;
-  onChange: (text: string) => void;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  onBlur?: () => void;
+  error?: boolean;
+  helperText?: string | null;
   isPass?: boolean;
-  isDate?: boolean;
-  getDate?: () => void;
   multiline?: boolean;
   maxLength?: number;
   disabled?: boolean;
@@ -22,21 +23,22 @@ interface TextInputComponentProps extends TextInputProps {
   rightIcon?: string;
   action?: () => void;
   affix?: string;
-  error?: string;
   autoFocus?: boolean;
   editable?: boolean;
+  style?: any;
+  keyboardType?: any;
 }
 
 const TextInput = (props: TextInputComponentProps) => {
   const [showPass, setShowPass] = useState(true);
   const { theme } = useTheme();
 
-  const renderError = (error) => {
+  const renderError = (helperText: string | null | undefined) => {
     return (
       <>
-        {error && (
+        {helperText && (
           <HelperText variant="labelSmall" type="error">
-            {error}
+            {helperText}
           </HelperText>
         )}
       </>
@@ -48,9 +50,9 @@ const TextInput = (props: TextInputComponentProps) => {
       <PTextInput
         label={props.label}
         placeholder={props.placeholder}
-        value={props.value}
-        onChangeText={props.onChange ? props.onChange : null}
-        showSoftInputOnFocus={props.isDate ? false : true}
+        value={props.value || ""}
+        onChangeText={props.onChangeText}
+        onBlur={props.onBlur}
         secureTextEntry={props.isPass && showPass}
         multiline={props.multiline ? true : false}
         maxLength={props.maxLength}
@@ -58,6 +60,8 @@ const TextInput = (props: TextInputComponentProps) => {
         accessibilityLabel={props.label}
         numberOfLines={props.numberOfLines ? props.numberOfLines : 1}
         mode={props.mode}
+        error={props.error}
+        keyboardType={props.keyboardType}
         right={
           props.isPass ? (
             <PTextInput.Icon
@@ -66,16 +70,9 @@ const TextInput = (props: TextInputComponentProps) => {
               accessibilityLabel={showPass ? "show password" : "hide password"}
               size={30}
             />
-          ) : props.isDate ? (
-            <PTextInput.Icon
-              icon="calendar"
-              onPress={props.getDate}
-              accessibilityLabel="pick date"
-              size={30}
-            />
           ) : props.multiline ? (
             <PTextInput.Affix
-              text={`${props?.value?.length}/${props?.maxLength}`}
+              text={`${props?.value?.length || 0}/${props?.maxLength}`}
               textStyle={{ color: "gray", fontSize: 12 }}
             />
           ) : props.affix ? (
@@ -95,24 +92,26 @@ const TextInput = (props: TextInputComponentProps) => {
             />
           ) : null
         }
-        style={{
-          width: "100%",
-          height: !props.multiline && 60,
-          borderRadius: 8,
-          padding: props.multiline && 5,
-          marginTop: 12,
-          minHeight: 60,
-          fontSize: 18,
-        }}
-        focusable={false}
-        autoFocus={props.autoFocus}
-        editable={props.editable}
-        placeholderTextColor={"gray"}
+        style={[
+          {
+            width: "100%",
+            height: !props.multiline ? 60 : undefined,
+            borderRadius: 8,
+            marginTop: 12,
+            minHeight: 60,
+            fontWeight: "600" as "600",
+            fontSize: 18,
+          },
+          props.style,
+        ]}
         activeOutlineColor="#004AAD"
-        keyboardType={props.keyboardType}
-        autoCapitalize={props.autoCapitalize}
+        contentStyle={{
+          textTransform: "capitalize",
+        }}
+        editable={props.editable !== undefined ? props.editable : true}
+        autoFocus={props.autoFocus}
       />
-      {renderError(props.error)}
+      {renderError(props.helperText)}
     </>
   );
 };

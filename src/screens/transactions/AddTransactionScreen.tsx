@@ -31,6 +31,12 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
         required: true,
       },
     },
+    date: {
+      initialValue: new Date().toISOString(),
+      validation: {
+        required: true,
+      },
+    },
     category: {
       initialValue: "",
       validation: {
@@ -70,11 +76,12 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
               {...form.getFieldProps("description")}
               style={styles.input}
             />
+
             <DateInput
               label="Date"
               mode="outlined"
               {...form.getFieldProps("date")}
-              //style={styles.input}
+              style={styles.input}
             />
 
             <SelectInput
@@ -82,7 +89,7 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
               label="Category"
               mode="outlined"
               {...form.getFieldProps("category")}
-              //style={styles.input}
+              style={styles.input}
             />
 
             <Button

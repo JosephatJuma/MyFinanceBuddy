@@ -10,23 +10,48 @@ import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { TextInput, Text, useTheme, HelperText } from "react-native-paper";
 import { useTheme as useAppTheme } from "../../hooks";
 
-const SelectInput = ({
+interface SelectOption {
+  label: string;
+  value: string;
+  description?: string;
+}
+
+interface SelectInputProps {
+  field?: string;
+  label: string;
+  options?: SelectOption[];
+  onChangeText?: (value: string) => void;
+  onBlur?: () => void;
+  loading?: boolean;
+  required?: boolean;
+  error?: boolean;
+  value?: string;
+  helperText?: string | null;
+  disabled?: boolean;
+  multiple?: boolean;
+  showDescription?: boolean;
+  mode?: "flat" | "outlined";
+  style?: any;
+}
+
+const SelectInput: React.FC<SelectInputProps> = ({
   field,
   label,
   options = [],
-  onChange,
+  onChangeText,
+  onBlur,
   loading,
   required,
   error,
   value,
-  helper,
+  helperText,
   disabled,
   multiple,
   showDescription = true,
-  mode = "flat" as "flat" | "outlined",
+  mode = "flat",
   style,
 }) => {
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<SelectOption | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const { colors } = useTheme();
   const { theme } = useAppTheme();
@@ -35,15 +60,16 @@ const SelectInput = ({
     if (!disabled) setIsOpen(!isOpen);
   };
 
-  const selectFirstItem = (value) => {
-    const firstItem = options?.find((v) => v.value === value);
-    setSelected(firstItem);
-    return firstItem;
+  const handleSelect = (option: SelectOption) => {
+    setSelected(option);
+    setIsOpen(false);
+    onChangeText?.(option.value);
+    onBlur?.();
   };
 
   // set the selected value from id
   useEffect(() => {
-    if (options?.length > 0 && value !== null) {
+    if (options?.length > 0 && value) {
       const item = options.find((option) => option.value === value);
       if (item) setSelected(item);
     }
@@ -57,10 +83,9 @@ const SelectInput = ({
           onPress={toggleDropdown}
           editable={false}
           mode={mode}
-          onChange={onChange ? onChange : null}
           label={label}
           placeholder={`Select ${label || field}`}
-          value={selected?.label}
+          value={selected?.label || ""}
           right={
             <TextInput.Icon
               onPress={toggleDropdown}
@@ -69,24 +94,26 @@ const SelectInput = ({
           }
           error={!isOpen && error}
           disabled={disabled}
-          style={{
-            width: "100%",
-            borderRadius: 8,
-            marginTop: 12,
-            minHeight: 60,
-            fontWeight: "600",
-            fontSize: 18,
-            ...style,
-          }}
+          style={[
+            {
+              width: "100%",
+              borderRadius: 8,
+              marginTop: 12,
+              minHeight: 60,
+              fontWeight: "600",
+              fontSize: 18,
+            },
+            style,
+          ]}
           activeOutlineColor="#004AAD"
           contentStyle={{
             textTransform: "capitalize",
           }}
         />
       </TouchableOpacity>
-      {error && !isOpen && (
+      {error && !isOpen && helperText && (
         <HelperText variant="labelSmall" type="error">
-          {error}
+          {helperText}
         </HelperText>
       )}
 
@@ -121,7 +148,7 @@ const SelectInput = ({
               nestedScrollEnabled
               keyExtractor={(item) => item.value}
               renderItem={({ item }) => {
-                const { id, description, label: name } = item || {};
+                const { description, label: name } = item || {};
                 const isSelected = selected?.value === item?.value;
 
                 return (
@@ -132,11 +159,7 @@ const SelectInput = ({
                         backgroundColor: colors.elevation.level2,
                       },
                     ]}
-                    onPress={() => {
-                      toggleDropdown();
-                      setSelected(item);
-                      onChange ? onChange(item) : null;
-                    }}
+                    onPress={() => handleSelect(item)}
                   >
                     <Text
                       style={[

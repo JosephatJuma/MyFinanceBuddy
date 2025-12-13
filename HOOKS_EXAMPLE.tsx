@@ -2,10 +2,10 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, Card } from "react-native-paper";
-import { useAuthContext } from "../contexts/AuthContext";
-import { useThemeContext } from "../contexts/ThemeContext";
-import { useForm } from "../hooks/useForm";
-import { useStorage } from "../hooks/useStorage";
+import { useAuthContext } from "./src/contexts";
+import { useThemeContext } from "./src/contexts";
+import { useStorage } from "./src/hooks";
+import { useForm } from "./src/hooks";
 
 const ExampleComponent = () => {
   // ============================================

@@ -8,7 +8,6 @@ import { Transaction } from "../../types";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks";
 
-
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
   "TransactionsList"
@@ -28,7 +27,7 @@ const TransactionsListScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("User ", user)
+    console.log("User ", user);
     if (user) {
       loadTransactions();
     }
@@ -147,7 +146,9 @@ const TransactionsListScreen: React.FC<Props> = ({ navigation }) => {
 
   if (loading) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
         <Text variant="bodyLarge" style={styles.emptyText}>
           Loading transactions...
         </Text>

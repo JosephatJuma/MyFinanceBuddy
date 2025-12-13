@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { TextInput, Text, useTheme, HelperText } from "react-native-paper";
-import { useTheme as useAppTheme } from "../../hooks";
 
 interface SelectOption {
   label: string;
@@ -54,7 +53,6 @@ const SelectInput: React.FC<SelectInputProps> = ({
   const [selected, setSelected] = useState<SelectOption | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const { colors } = useTheme();
-  const { theme } = useAppTheme();
 
   const toggleDropdown = () => {
     if (!disabled) setIsOpen(!isOpen);

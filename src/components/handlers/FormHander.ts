@@ -7,7 +7,7 @@ import { useSet } from "../../hooks/common/useSet";
 import { useDraftListener } from "../../hooks/drafts/useDraftListener";
 import { formHooks } from "../../hooks/handlers/useFormHandler";
 import { createForm, getValidators, RenderForm } from "../../utils/formUtils";
-import FormButton from "../reusable/FormButton";
+import FormButton from "../forms/FormButton";
 
 const FormHandler = ({ navigation, route }: any) => {
   const { params } = route || {};
@@ -163,8 +163,6 @@ const FormHandler = ({ navigation, route }: any) => {
 
   return (
     <View style={[styles.whiteBg, styles.flex1]}>
-      {/* HEADER */}
-      {draftHeader}
       <ScrollView>
         <View style={[styles.gap15, styles.p15, styles.flex1]}>
           {/* FORM */}

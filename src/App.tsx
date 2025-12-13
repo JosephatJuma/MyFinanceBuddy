@@ -49,7 +49,7 @@ export default function App() {
           ? "height"
           : undefined
       }
-      style={{ flex: 1 }}
+      style={styles.container}
     >
       <GestureHandlerRootView style={styles.container}>
         <SafeAreaProvider>

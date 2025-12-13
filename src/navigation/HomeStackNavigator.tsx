@@ -13,6 +13,7 @@ const Stack = createNativeStackNavigator<HomeStackParamList>();
 export const HomeStackNavigator = () => {
   return (
     <Stack.Navigator
+      id="home"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

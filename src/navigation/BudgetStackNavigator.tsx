@@ -13,6 +13,7 @@ const Stack = createNativeStackNavigator<BudgetStackParamList>();
 export const BudgetStackNavigator = () => {
   return (
     <Stack.Navigator
+      id="budget"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

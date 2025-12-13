@@ -30,7 +30,7 @@ export const RootNavigator = () => {
     <NavigationContainer
       theme={themeMode === "dark" ? DarkTheme : DefaultTheme}
     >
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator id="root" screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <Stack.Screen name="Main" component={DrawerNavigator} />
         ) : (

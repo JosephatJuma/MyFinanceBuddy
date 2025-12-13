@@ -14,6 +14,7 @@ const Stack = createNativeStackNavigator<SettingsStackParamList>();
 export const SettingsStackNavigator = () => {
   return (
     <Stack.Navigator
+      id="settings"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

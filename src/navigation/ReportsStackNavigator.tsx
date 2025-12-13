@@ -11,6 +11,7 @@ const Stack = createNativeStackNavigator<ReportsStackParamList>();
 export const ReportsStackNavigator = () => {
   return (
     <Stack.Navigator
+      id="reports"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

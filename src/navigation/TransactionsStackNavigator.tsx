@@ -13,6 +13,7 @@ const Stack = createNativeStackNavigator<TransactionsStackParamList>();
 export const TransactionsStackNavigator = () => {
   return (
     <Stack.Navigator
+      id="transacrions"
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",

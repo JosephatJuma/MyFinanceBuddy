@@ -17,6 +17,7 @@ export const DrawerNavigator = () => {
   const { colors } = useTheme();
   return (
     <Drawer.Navigator
+      id="main_drawer"
       screenOptions={{
         headerShown: true,
         header: (props) => <HomeHeader props={props} />,

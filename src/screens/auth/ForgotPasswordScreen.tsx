@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { Text, Button, Card, IconButton } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
@@ -22,10 +28,7 @@ const EmailIllustration = ({ color }: { color: string }) => (
       fill={color}
       opacity="0.3"
     />
-    <Path
-      d="M 25 35 L 75 35 L 50 50 Z"
-      fill={color}
-    />
+    <Path d="M 25 35 L 75 35 L 50 50 Z" fill={color} />
     <Circle cx="70" cy="40" r="8" fill="#10b981" />
     <Path
       d="M 67 40 L 69 42 L 73 38"
@@ -66,7 +69,8 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
       );
     } else {
       dialog.showError(
-        result.error || "Failed to send reset email. Please check your email and try again.",
+        result.error ||
+          "Failed to send reset email. Please check your email and try again.",
         "Error"
       );
       form.setFieldError("email", result.error || "Failed to send reset email");
@@ -101,8 +105,15 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
             <Text variant="headlineMedium" style={styles.title}>
               Forgot Password?
             </Text>
-            <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
-              No worries! Enter your email address and we'll send you instructions to reset your password.
+            <Text
+              variant="bodyMedium"
+              style={[
+                styles.subtitle,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              No worries! Enter your email address and we'll send you
+              instructions to reset your password.
             </Text>
 
             <TextInput

@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { Text, Button, Card, Divider, ProgressBar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
@@ -87,13 +93,13 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const getPasswordStrength = () => {
     const password = form.values.password;
     if (!password) return { strength: 0, label: "" };
-    
+
     let strength = 0;
     if (password.length >= 6) strength += 0.25;
     if (password.length >= 8) strength += 0.25;
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 0.25;
     if (/[0-9]/.test(password)) strength += 0.25;
-    
+
     const labels = ["Weak", "Fair", "Good", "Strong"];
     const index = Math.min(Math.floor(strength * 4), 3);
     return { strength, label: labels[index] || "" };
@@ -117,7 +123,13 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             <Text variant="headlineLarge" style={styles.title}>
               Create Account
             </Text>
-            <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
+            <Text
+              variant="bodyMedium"
+              style={[
+                styles.subtitle,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
               Join MyFinanceBuddy and start managing your finances smartly
             </Text>
 

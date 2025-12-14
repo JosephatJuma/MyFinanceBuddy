@@ -9,6 +9,7 @@ import { Transaction } from "../../types";
 import { useFinance } from "../../contexts/FinanceContext";
 import { supabase } from "../../lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
+import TransactionCard from "../../components/reusable/TransactionCard";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Dashboard">;
 
@@ -188,9 +189,9 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView style={styles.scrollView}>
-        <Text variant="headlineMedium" style={styles.greeting}>
+        {/* <Text variant="headlineMedium" style={styles.greeting}>
           Welcome, {user?.name || "User"}!
-        </Text>
+        </Text> */}
 
         {/* Credit Card Style Balance Card */}
         <LinearGradient
@@ -231,27 +232,9 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           {/* Decorative circles */}
-          <View style={styles.decorativeCircle1} />
-          <View style={styles.decorativeCircle2} />
+          <View style={styles.decorativeCircle1} pointerEvents="none" />
+          <View style={styles.decorativeCircle2} pointerEvents="none" />
         </LinearGradient>
-
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text variant="titleMedium">Savings</Text>
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {formatCurrency(stats?.totalSavings)}
-            </Text>
-          </Card.Content>
-        </Card>
-
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text variant="titleMedium">Income</Text>
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {formatCurrency(stats?.totalIncome)}
-            </Text>
-          </Card.Content>
-        </Card>
 
         {insights.length > 0 && (
           <Card style={styles.card}>
@@ -282,6 +265,47 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
             </Card.Content>
           </Card>
         )}
+
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium">Expenses</Text>
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              {formatCurrency(stats?.totalExpenses)}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium">Savings</Text>
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              {formatCurrency(stats?.totalSavings)}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text variant="titleMedium">Income</Text>
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              {formatCurrency(stats?.totalIncome)}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <View>
+          {recentTransactions.length === 0 ? (
+            <View>
+              <Text>
+                No transactions yet. Add your first transaction to get started!
+              </Text>
+            </View>
+          ) : (
+            recentTransactions.map((transaction) => (
+              <TransactionCard key={transaction.id} transaction={transaction} />
+            ))
+          )}
+        </View>
       </ScrollView>
 
       <FAB
@@ -325,6 +349,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 32,
+    zIndex: 10,
   },
   cardChip: {
     width: 50,

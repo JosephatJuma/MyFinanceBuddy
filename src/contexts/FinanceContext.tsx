@@ -9,7 +9,7 @@ interface FinanceContextType {
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
-  const [showFigures, setShowFigures] = useState<boolean>(true);
+  const [showFigures, setShowFigures] = useState<boolean>(false);
 
   const toggleShowFigures = async () => {
     setShowFigures(!showFigures);

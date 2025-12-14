@@ -99,6 +99,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
     "category"
   );
   const [dateMenuVisible, setDateMenuVisible] = useState(false);
+  const [showCategoryFilters, setShowCategoryFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expenseData, setExpenseData] = useState<CategoryData[]>([]);
   const [incomeData, setIncomeData] = useState<CategoryData[]>([]);
@@ -468,36 +469,60 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
             </View>
           )}
 
-          {/* Category Filters */}
+          {/* Category Filters Toggle */}
           {allCategories.length > 0 && (
             <View style={styles.filterSection}>
-              <Text variant="labelLarge" style={styles.filterLabel}>
-                Filter by Categories
-              </Text>
-              <View style={styles.chipContainer}>
-                {allCategories.map((category) => (
-                  <Chip
-                    key={category}
-                    selected={
-                      selectedCategories.length === 0 ||
-                      selectedCategories.includes(category)
-                    }
-                    onPress={() => toggleCategory(category)}
-                    style={styles.chip}
-                  >
-                    {category}
-                  </Chip>
-                ))}
+              <TouchableOpacity
+                onPress={() => setShowCategoryFilters(!showCategoryFilters)}
+                style={styles.filterToggle}
+              >
+                <View style={styles.filterToggleLeft}>
+                  <Icon
+                    source={showCategoryFilters ? "chevron-down" : "chevron-right"}
+                    size={20}
+                    color={theme.colors.primary}
+                  />
+                  <Text variant="labelLarge" style={styles.filterLabel}>
+                    Filter by Categories
+                  </Text>
+                </View>
                 {selectedCategories.length > 0 && (
                   <Chip
-                    onPress={() => setSelectedCategories([])}
-                    style={[styles.chip, styles.clearChip]}
-                    textStyle={{ color: "#ef4444" }}
+                    compact
+                    style={styles.categoryCountChip}
+                    textStyle={{ fontSize: 11 }}
                   >
-                    Clear All
+                    {selectedCategories.length} selected
                   </Chip>
                 )}
-              </View>
+              </TouchableOpacity>
+
+              {showCategoryFilters && (
+                <View style={styles.chipContainer}>
+                  {allCategories.map((category) => (
+                    <Chip
+                      key={category}
+                      selected={
+                        selectedCategories.length === 0 ||
+                        selectedCategories.includes(category)
+                      }
+                      onPress={() => toggleCategory(category)}
+                      style={styles.chip}
+                    >
+                      {category}
+                    </Chip>
+                  ))}
+                  {selectedCategories.length > 0 && (
+                    <Chip
+                      onPress={() => setSelectedCategories([])}
+                      style={[styles.chip, styles.clearChip]}
+                      textStyle={{ color: "#ef4444" }}
+                    >
+                      Clear All
+                    </Chip>
+                  )}
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -815,8 +840,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   filterLabel: {
-    marginBottom: 8,
     fontWeight: "600",
+  },
+  filterToggle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  filterToggleLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  categoryCountChip: {
+    backgroundColor: "rgba(98, 0, 238, 0.1)",
   },
   filterButton: {
     marginBottom: 0,

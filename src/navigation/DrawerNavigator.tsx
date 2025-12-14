@@ -26,6 +26,7 @@ export const DrawerNavigator = () => {
           width: 280,
           backgroundColor: colors.background,
         },
+        swipeEdgeWidth: 300,
         drawerInactiveTintColor: colors.primary,
       }}
       initialRouteName="Home"

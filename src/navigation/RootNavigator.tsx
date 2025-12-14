@@ -14,16 +14,17 @@ import { DrawerNavigator } from "./DrawerNavigator";
 // Import context
 import { useAuthContext } from "../contexts/AuthContext";
 import { useTheme } from "../hooks";
+import AuthLoadingScreen from "../components/reusable/AuthLoadingScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
   const { isAuthenticated, isLoading } = useAuthContext();
+
   const { themeMode } = useTheme();
 
   if (isLoading) {
-    // You can return a loading screen here
-    return null;
+    return <AuthLoadingScreen />;
   }
 
   return (

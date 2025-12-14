@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface User {
   id: string;
@@ -212,12 +213,15 @@ export const useAuth = () => {
 
       if (error) throw error;
 
+      // Clear onboarding flag to show onboarding again on next login
+      await AsyncStorage.removeItem("@onboarding_complete");
+
       setAuthState({
         user: null,
         isLoading: false,
         isAuthenticated: false,
       });
-      //navigation?.replace("Auth");
+
       return { success: true };
     } catch (error) {
       return {

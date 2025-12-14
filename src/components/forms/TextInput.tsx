@@ -135,7 +135,7 @@ const TextInput = (props: TextInputComponentProps) => {
           },
           props.style,
         ]}
-        activeOutlineColor="#004AAD"
+        // activeOutlineColor="#004AAD"
         editable={props.editable !== undefined ? props.editable : true}
         autoFocus={props.autoFocus}
       />

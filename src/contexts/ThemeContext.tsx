@@ -4,6 +4,7 @@ import {
   ThemeMode,
   CustomTheme,
   MainNavigator,
+  ColorPalette,
 } from "../hooks/useTheme";
 
 interface ThemeContextType {
@@ -15,6 +16,10 @@ interface ThemeContextType {
   setTheme: (mode: ThemeMode) => Promise<void>;
   mainNavigator: MainNavigator;
   toggleMainNavigator: () => Promise<void>;
+  colorPalette: ColorPalette;
+  changeColorPalette: (palette: ColorPalette) => Promise<void>;
+  getPaletteInfo: (palette: ColorPalette) => any;
+  getAllPalettes: () => any[];
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -37,6 +42,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     themeData.loadTheme();
     themeData.loadMainNavigator();
+    themeData.loadColorPalette();
   }, []);
 
   return (

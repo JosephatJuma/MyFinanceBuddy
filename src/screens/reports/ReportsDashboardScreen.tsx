@@ -478,7 +478,9 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
               >
                 <View style={styles.filterToggleLeft}>
                   <Icon
-                    source={showCategoryFilters ? "chevron-down" : "chevron-right"}
+                    source={
+                      showCategoryFilters ? "chevron-down" : "chevron-right"
+                    }
                     size={20}
                     color={theme.colors.primary}
                   />

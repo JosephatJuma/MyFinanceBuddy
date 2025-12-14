@@ -2,6 +2,7 @@ export { useAuth } from "./useAuth";
 export { useTheme } from "./useTheme";
 export { useForm } from "./useForm";
 export { useStorage } from "./useStorage";
+export { useDialog } from "./useDialog";
 
 export type { User, AuthState } from "./useAuth";
 export type { ThemeMode, CustomTheme } from "./useTheme";

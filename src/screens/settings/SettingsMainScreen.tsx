@@ -5,15 +5,32 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SettingsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useDialog } from "../../hooks/useDialog";
+import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "SettingsMain">;
 
 const SettingsMainScreen: React.FC<Props> = ({ navigation }) => {
   const { theme, isDark, toggleTheme } = useThemeContext();
   const { logout } = useAuthContext();
+  const dialog = useDialog();
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    dialog.showConfirm(
+      "Logout",
+      "Are you sure you want to logout? You'll need to sign in again to access your account.",
+      async () => {
+        const result = await logout();
+        if (!result.success) {
+          dialog.showError(
+            result.error || "Failed to logout. Please try again."
+          );
+        }
+      },
+      undefined,
+      "Logout",
+      "Cancel"
+    );
   };
 
   return (
@@ -73,6 +90,8 @@ const SettingsMainScreen: React.FC<Props> = ({ navigation }) => {
           onPress={handleLogout}
         />
       </ScrollView>
+
+      <ConfirmDialog config={dialog.config} />
     </View>
   );
 };

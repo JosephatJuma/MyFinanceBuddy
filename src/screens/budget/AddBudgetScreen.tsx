@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, Button, IconButton, Icon } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { BudgetStackParamList } from "../../navigation/types";
@@ -10,12 +10,15 @@ import { useForm } from "../../hooks/useForm";
 import TextInput from "../../components/forms/TextInput";
 import SelectInput from "../../components/forms/SelectInput";
 import { EXPENSE_CATEGORIES } from "../../constants/options";
+import { useDialog } from "../../hooks/useDialog";
+import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 
 type Props = NativeStackScreenProps<BudgetStackParamList, "AddBudget">;
 
 const AddBudgetScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useThemeContext();
   const { user } = useAuthContext();
+  const dialog = useDialog();
   const [loading, setLoading] = useState(false);
 
   const currentMonth = new Date().toISOString().slice(0, 7) + "-01";
@@ -56,20 +59,20 @@ const AddBudgetScreen: React.FC<Props> = ({ navigation }) => {
 
       if (error) {
         if (error.code === "23505") {
-          Alert.alert(
-            "Duplicate Budget",
-            "Budget for this category already exists this month"
+          dialog.showError(
+            "Budget for this category already exists this month",
+            "Duplicate Budget"
           );
         } else {
           throw error;
         }
       } else {
-        Alert.alert("Success", "Budget added successfully", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
+        dialog.showSuccess("Budget added successfully", "Success", () =>
+          navigation.goBack()
+        );
       }
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to add budget");
+      dialog.showError(err.message || "Failed to add budget");
     } finally {
       setLoading(false);
     }
@@ -170,6 +173,8 @@ const AddBudgetScreen: React.FC<Props> = ({ navigation }) => {
           Add Budget
         </Button>
       </View>
+
+      <ConfirmDialog config={dialog.config} />
     </View>
   );
 };

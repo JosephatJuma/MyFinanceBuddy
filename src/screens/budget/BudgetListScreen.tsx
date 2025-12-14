@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   ScrollView,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import {
@@ -22,6 +21,9 @@ import { supabase } from "../../lib/supabase";
 import { EXPENSE_CATEGORIES } from "../../constants/options";
 import { useFinance } from "../../contexts/FinanceContext";
 import { useFocusEffect } from "@react-navigation/native";
+import { useDialog } from "../../hooks/useDialog";
+import ConfirmDialog from "../../components/reusable/ConfirmDialog";
+
 
 type Props = NativeStackScreenProps<BudgetStackParamList, "BudgetList">;
 
@@ -42,6 +44,7 @@ const BudgetListScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useThemeContext();
   const { user } = useAuthContext();
   const { formatCurrency } = useFinance();
+  const dialog = useDialog();
 
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [spending, setSpending] = useState<SpendingData>({});
@@ -82,7 +85,7 @@ const BudgetListScreen: React.FC<Props> = ({ navigation }) => {
       }
     } catch (error) {
       console.error("Error loading budgets:", error);
-      Alert.alert("Error", "Failed to load budgets");
+      dialog.showError("Failed to load budgets");
     } finally {
       setLoading(false);
     }
@@ -127,32 +130,28 @@ const BudgetListScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleDeleteBudget = (id: string) => {
-    Alert.alert(
+    dialog.showConfirm(
       "Delete Budget",
       "Are you sure you want to delete this budget?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const { error } = await supabase
-                .from("budgets")
-                .delete()
-                .eq("id", id);
+      async () => {
+        try {
+          const { error } = await supabase
+            .from("budgets")
+            .delete()
+            .eq("id", id);
 
-              if (error) throw error;
+          if (error) throw error;
 
-              loadBudgets();
-              Alert.alert("Success", "Budget deleted successfully");
-            } catch (error) {
-              console.error("Error deleting budget:", error);
-              Alert.alert("Error", "Failed to delete budget");
-            }
-          },
-        },
-      ]
+          loadBudgets();
+          dialog.showSuccess("Budget deleted successfully");
+        } catch (error) {
+          console.error("Error deleting budget:", error);
+          dialog.showError("Failed to delete budget");
+        }
+      },
+      undefined,
+      "Delete",
+      "Cancel"
     );
   };
 
@@ -333,6 +332,8 @@ const BudgetListScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
+
+      <ConfirmDialog config={dialog.config} />
     </View>
   );
 };

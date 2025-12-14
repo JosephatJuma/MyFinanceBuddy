@@ -10,10 +10,11 @@ import { RootStackParamList } from "./types";
 // Import navigators
 import { AuthNavigator } from "./AuthNavigator";
 import { DrawerNavigator } from "./DrawerNavigator";
+import { TabNavigator } from "./TabNavigator";
 
 // Import context
 import { useAuthContext } from "../contexts/AuthContext";
-import { useTheme } from "../hooks";
+import { useThemeContext } from "../contexts/ThemeContext";
 import AuthLoadingScreen from "../components/reusable/AuthLoadingScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -21,7 +22,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export const RootNavigator = () => {
   const { isAuthenticated, isLoading } = useAuthContext();
 
-  const { themeMode } = useTheme();
+  const { themeMode, mainNavigator } = useThemeContext();
 
   if (isLoading) {
     return <AuthLoadingScreen />;
@@ -33,7 +34,13 @@ export const RootNavigator = () => {
     >
       <Stack.Navigator id="root" screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="Main" component={DrawerNavigator} />
+          <Stack.Screen
+            name="Main"
+            key={`main-${mainNavigator}`}
+            component={
+              mainNavigator === "drawer" ? DrawerNavigator : TabNavigator
+            }
+          />
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         )}

@@ -3,6 +3,7 @@ import { MD3LightTheme, MD3DarkTheme } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type ThemeMode = "light" | "dark" | "auto";
+export type MainNavigator = "drawer" | "tab";
 
 export interface CustomTheme {
   dark: boolean;
@@ -60,6 +61,7 @@ const darkTheme: CustomTheme = {
 
 export const useTheme = () => {
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [mainNavigator, setMainNavigator] = useState<MainNavigator>("drawer");
   const [isDark, setIsDark] = useState(false);
 
   const theme = useMemo(() => {
@@ -76,6 +78,14 @@ export const useTheme = () => {
     setIsDark(newMode === "dark");
     await AsyncStorage.setItem("themeMode", newMode);
   }, [themeMode]);
+
+  const toggleMainNavigator = useCallback(async () => {
+    const newMainNavigator: MainNavigator =
+      mainNavigator === "drawer" ? "tab" : "drawer";
+    setMainNavigator(newMainNavigator);
+
+    await AsyncStorage.setItem("mainNavigator", newMainNavigator);
+  }, [mainNavigator]);
 
   const setTheme = useCallback(async (mode: ThemeMode) => {
     setThemeMode(mode);
@@ -95,6 +105,17 @@ export const useTheme = () => {
     }
   }, []);
 
+  const loadMainNavigator = useCallback(async () => {
+    try {
+      const savedNavigation = await AsyncStorage.getItem("mainNavigator");
+      if (savedNavigation) {
+        setMainNavigator(savedNavigation as MainNavigator);
+      }
+    } catch (error) {
+      console.error("Error loading navigator:", error);
+    }
+  }, []);
+
   return {
     theme,
     paperTheme,
@@ -102,6 +123,9 @@ export const useTheme = () => {
     isDark,
     toggleTheme,
     setTheme,
+    mainNavigator,
+    toggleMainNavigator,
     loadTheme,
+    loadMainNavigator,
   };
 };

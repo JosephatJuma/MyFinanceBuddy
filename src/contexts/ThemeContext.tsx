@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useEffect, ReactNode } from "react";
-import { useTheme, ThemeMode, CustomTheme } from "../hooks/useTheme";
+import {
+  useTheme,
+  ThemeMode,
+  CustomTheme,
+  MainNavigator,
+} from "../hooks/useTheme";
 
 interface ThemeContextType {
   theme: CustomTheme;
@@ -8,6 +13,8 @@ interface ThemeContextType {
   isDark: boolean;
   toggleTheme: () => Promise<void>;
   setTheme: (mode: ThemeMode) => Promise<void>;
+  mainNavigator: MainNavigator;
+  toggleMainNavigator: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -29,6 +36,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   useEffect(() => {
     themeData.loadTheme();
+    themeData.loadMainNavigator();
   }, []);
 
   return (

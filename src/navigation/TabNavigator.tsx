@@ -20,7 +20,7 @@ export const TabNavigator = () => {
       screenOptions={{
         headerShown: true,
         header: (props) => <HomeHeader props={props} />,
-
+        tabBarActiveTintColor: colors.primary,
         tabBarStyle: {
           // width: 280,
           backgroundColor: colors.background,

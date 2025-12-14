@@ -225,7 +225,7 @@ const colorPalettes: Record<ColorPalette, PaletteTheme> = {
 };
 
 export const useTheme = () => {
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [themeMode, setThemeMode] = useState<ThemeMode>("auto");
   const [mainNavigator, setMainNavigator] = useState<MainNavigator>("drawer");
   const [colorPalette, setColorPalette] = useState<ColorPalette>("default");
   const [isDark, setIsDark] = useState(false);

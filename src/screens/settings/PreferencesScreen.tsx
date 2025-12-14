@@ -55,7 +55,7 @@ const PreferencesScreen: React.FC<Props> = () => {
               </View>
             )}
             right={() => (
-              <RadioButton
+              <RadioButton.Android
                 value={palette.key}
                 status={colorPalette === palette.key ? "checked" : "unchecked"}
                 onPress={() => changeColorPalette(palette.key as ColorPalette)}

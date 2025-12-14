@@ -1,11 +1,14 @@
-import React from "react";
+import React, { use } from "react";
 import { Appbar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { useTheme } from "../../hooks";
+import { useThemeContext } from "../../contexts";
 
 const HomeHeader = ({ props }) => {
   const navigation = useNavigation();
-  const { mainNavigator, theme } = useTheme();
+  const { theme } = useTheme();
+  const { mainNavigator } = useThemeContext();
+
   return (
     <Appbar.Header>
       {mainNavigator === "drawer" ? (

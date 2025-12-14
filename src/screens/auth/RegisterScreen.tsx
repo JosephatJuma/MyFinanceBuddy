@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Button, Card, Snackbar } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import TextInput from "../../components/forms/TextInput";
+import ErrorDialog from "../../components/reusable/ErrorDialog";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { register } = useAuthContext();
   const { theme } = useThemeContext();
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const form = useForm({
     name: {
@@ -53,16 +55,26 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   const handleRegister = form.handleSubmit(async (values) => {
-    const result = await register(values.name, values.email, values.password);
-    if (!result.success) {
-      setSnackbarMessage(
-        result.error || "Registration failed. Please try again."
-      );
-      setSnackbarVisible(true);
-      form.setFieldError("email", result.error || "Registration failed");
-    } else {
-      setSnackbarMessage("Account created successfully!");
-      setSnackbarVisible(true);
+    try {
+      setIsLoading(true);
+      const result = await register(values.name, values.email, values.password);
+
+      if (result.success) {
+        // Reset form only on success
+        form.reset();
+        // Navigation will happen automatically via AuthContext
+      } else {
+        setErrorMessage(
+          result.error || "Registration failed. Please try again."
+        );
+        setErrorDialogVisible(true);
+        form.setFieldError("email", result.error || "Registration failed");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorDialogVisible(true);
+    } finally {
+      setIsLoading(false);
     }
   });
 
@@ -83,6 +95,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             label="Full Name"
             mode="outlined"
             {...form.getFieldProps("name")}
+            autoCapitalize="words"
             style={styles.input}
           />
 
@@ -91,6 +104,8 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("email")}
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
             style={styles.input}
           />
 
@@ -99,6 +114,8 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("password")}
             isPass
+            autoCapitalize="none"
+            autoCorrect={false}
             style={styles.input}
           />
 
@@ -107,17 +124,19 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("confirmPassword")}
             isPass
+            autoCapitalize="none"
+            autoCorrect={false}
             style={styles.input}
           />
 
           <Button
             mode="contained"
             onPress={handleRegister}
-            loading={form.isSubmitting}
-            disabled={form.isSubmitting}
+            loading={isLoading}
+            disabled={isLoading}
             style={styles.button}
           >
-            Register
+            {isLoading ? "Creating Account..." : "Register"}
           </Button>
 
           <Button
@@ -130,17 +149,12 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         </Card.Content>
       </Card>
 
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        action={{
-          label: "OK",
-          onPress: () => setSnackbarVisible(false),
-        }}
-      >
-        {snackbarMessage}
-      </Snackbar>
+      <ErrorDialog
+        visible={errorDialogVisible}
+        title="Registration Failed"
+        message={errorMessage}
+        onDismiss={() => setErrorDialogVisible(false)}
+      />
     </ScrollView>
   );
 };

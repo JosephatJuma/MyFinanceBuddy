@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Text, Button, Card, Snackbar } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import TextInput from "../../components/forms/TextInput";
+import ErrorDialog from "../../components/reusable/ErrorDialog";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { login } = useAuthContext();
   const { theme } = useThemeContext();
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const form = useForm({
     email: {
@@ -34,11 +36,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   const handleLogin = form.handleSubmit(async (values) => {
-    const result = await login(values.email, values.password);
-    if (!result.success) {
-      setSnackbarMessage(result.error || "Login failed. Please try again.");
-      setSnackbarVisible(true);
-      form.setFieldError("password", result.error || "Login failed");
+    try {
+      setIsLoading(true);
+      const result = await login(values.email, values.password);
+
+      if (result.success) {
+        // Reset form only on success
+        form.reset();
+        // Navigation will happen automatically via AuthContext
+      } else {
+        setErrorMessage(result.error || "Login failed. Please try again.");
+        setErrorDialogVisible(true);
+        form.setFieldError("password", result.error || "Login failed");
+      }
+    } catch (error) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorDialogVisible(true);
+    } finally {
+      setIsLoading(false);
     }
   });
 
@@ -60,6 +75,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("email")}
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
             style={styles.input}
           />
 
@@ -68,17 +85,19 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             mode="outlined"
             {...form.getFieldProps("password")}
             isPass
+            autoCapitalize="none"
+            autoCorrect={false}
             style={styles.input}
           />
 
           <Button
             mode="contained"
             onPress={handleLogin}
-            loading={form.isSubmitting}
-            disabled={form.isSubmitting}
+            loading={isLoading}
+            disabled={isLoading}
             style={styles.button}
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
 
           <Button
@@ -99,17 +118,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         </Card.Content>
       </Card>
 
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        action={{
-          label: "OK",
-          onPress: () => setSnackbarVisible(false),
-        }}
-      >
-        {snackbarMessage}
-      </Snackbar>
+      <ErrorDialog
+        visible={errorDialogVisible}
+        title="Login Failed"
+        message={errorMessage}
+        onDismiss={() => setErrorDialogVisible(false)}
+      />
     </View>
   );
 };

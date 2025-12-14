@@ -161,8 +161,6 @@ export const useForm = <T extends FormValues>(config: FormConfig) => {
           e.preventDefault();
         }
 
-        setIsSubmitting(true);
-
         // Mark all fields as touched
         const allTouched: { [key: string]: boolean } = {};
         Object.keys(config).forEach((key) => {
@@ -174,13 +172,14 @@ export const useForm = <T extends FormValues>(config: FormConfig) => {
 
         if (isValid) {
           try {
+            setIsSubmitting(true);
             await onSubmit(values);
           } catch (error) {
             console.error("Form submission error:", error);
+          } finally {
+            setIsSubmitting(false);
           }
         }
-
-        setIsSubmitting(false);
       };
     },
     [config, values, validateAll]

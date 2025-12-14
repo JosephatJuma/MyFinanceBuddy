@@ -27,6 +27,9 @@ interface TextInputComponentProps extends Omit<PaperTextInputProps, "error"> {
   editable?: boolean;
   style?: any;
   keyboardType?: any;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  autoCorrect?: boolean;
+  textContentType?: any;
 }
 
 const TextInput = (props: TextInputComponentProps) => {
@@ -62,6 +65,34 @@ const TextInput = (props: TextInputComponentProps) => {
         mode={props.mode}
         error={props.error}
         keyboardType={props.keyboardType}
+        autoCapitalize={
+          props.autoCapitalize !== undefined
+            ? props.autoCapitalize
+            : props.isPass
+            ? "none"
+            : props.keyboardType === "email-address"
+            ? "none"
+            : "sentences"
+        }
+        autoCorrect={
+          props.autoCorrect !== undefined ? props.autoCorrect : !props.isPass
+        }
+        autoComplete={
+          props.isPass
+            ? "password"
+            : props.keyboardType === "email-address"
+            ? "email"
+            : "off"
+        }
+        textContentType={
+          props.textContentType
+            ? props.textContentType
+            : props.isPass
+            ? "password"
+            : props.keyboardType === "email-address"
+            ? "emailAddress"
+            : "none"
+        }
         right={
           props.isPass ? (
             <PTextInput.Icon
@@ -86,7 +117,7 @@ const TextInput = (props: TextInputComponentProps) => {
           props.rightIcon ? (
             <PTextInput.Icon
               icon={props.rightIcon}
-              accessibilityLabel={props.rightIcon}
+              // Removed textTransform to prevent auto-capitalizations.rightIcon}
               onPress={props.action ? props.action : () => {}}
               size={30}
             />
@@ -105,9 +136,6 @@ const TextInput = (props: TextInputComponentProps) => {
           props.style,
         ]}
         activeOutlineColor="#004AAD"
-        contentStyle={{
-          textTransform: "capitalize",
-        }}
         editable={props.editable !== undefined ? props.editable : true}
         autoFocus={props.autoFocus}
       />

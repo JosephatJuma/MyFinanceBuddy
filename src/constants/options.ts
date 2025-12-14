@@ -3,7 +3,7 @@ import { SelectOption } from "../types/form";
 export const EXPENSE_CATEGORIES: SelectOption[] = [
   {
     label: "Food & Dining",
-    value: "Food & Dining",
+    value: "Food",
     icon: "silverware-fork-knife",
   },
   { label: "Transport", value: "Transport", icon: "car" },

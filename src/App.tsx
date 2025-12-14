@@ -16,6 +16,7 @@ import { ThemeProvider, useThemeContext } from "./contexts/ThemeContext";
 
 // Import navigation
 import { RootNavigator } from "./navigation";
+import { FinanceProvider } from "./contexts/FinanceContext";
 
 function AppContent() {
   const { paperTheme, isDark } = useThemeContext();
@@ -55,7 +56,9 @@ export default function App() {
         <SafeAreaProvider>
           <ThemeProvider>
             <AuthProvider>
-              <AppContent />
+              <FinanceProvider>
+                <AppContent />
+              </FinanceProvider>
             </AuthProvider>
           </ThemeProvider>
         </SafeAreaProvider>

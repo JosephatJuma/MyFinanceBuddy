@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { useNavigation } from "@react-navigation/native";
+
 export interface User {
   id: string;
   email: string;
@@ -21,7 +21,6 @@ export const useAuth = () => {
     isLoading: true,
     isAuthenticated: false,
   });
-  // const navigation = useNavigation();
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -32,17 +31,45 @@ export const useAuth = () => {
         password,
       });
 
-      console.log(data);
+      if (error) {
+        console.error("Login error:", error);
+        setAuthState({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+        });
 
-      if (error) throw error;
+        // Return user-friendly error messages
+        let errorMessage = "Login failed. Please try again.";
+        if (error.message.includes("Invalid login credentials")) {
+          errorMessage =
+            "Invalid email or password. Please check your credentials and try again.";
+        } else if (error.message.includes("Email not confirmed")) {
+          errorMessage = "Please verify your email address before logging in.";
+        } else if (error.message.includes("network")) {
+          errorMessage =
+            "Network error. Please check your internet connection.";
+        }
+
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      }
 
       if (data.user) {
+        console.log("Login successful for user:", data.user.id);
+
         // Fetch user profile from profiles table
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", data.user.id)
           .single();
+
+        if (profileError && profileError.code !== "PGRST116") {
+          console.error("Profile fetch error:", profileError);
+        }
 
         const user: User = {
           id: data.user.id,
@@ -61,13 +88,20 @@ export const useAuth = () => {
         return { success: true };
       }
 
-      throw new Error("Login failed");
+      throw new Error("Login failed - no user data returned");
     } catch (error) {
-      console.log(error);
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      console.error("Login exception:", error);
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+      });
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Login failed",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Login failed. Please try again.",
       };
     }
   }, []);
@@ -88,9 +122,37 @@ export const useAuth = () => {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Registration error:", error);
+          setAuthState({
+            user: null,
+            isLoading: false,
+            isAuthenticated: false,
+          });
+
+          // Return user-friendly error messages
+          let errorMessage = "Registration failed. Please try again.";
+          if (error.message.includes("already registered")) {
+            errorMessage =
+              "This email is already registered. Please login instead.";
+          } else if (error.message.includes("Password")) {
+            errorMessage = "Password must be at least 6 characters long.";
+          } else if (error.message.includes("Email")) {
+            errorMessage = "Please enter a valid email address.";
+          } else if (error.message.includes("network")) {
+            errorMessage =
+              "Network error. Please check your internet connection.";
+          }
+
+          return {
+            success: false,
+            error: errorMessage,
+          };
+        }
 
         if (data.user) {
+          console.log("Registration successful for user:", data.user.id);
+
           // Create profile in profiles table
           const { error: profileError } = await supabase
             .from("profiles")
@@ -105,6 +167,7 @@ export const useAuth = () => {
 
           if (profileError) {
             console.error("Profile creation error:", profileError);
+            // Continue even if profile creation fails
           }
 
           const user: User = {
@@ -123,12 +186,20 @@ export const useAuth = () => {
           return { success: true };
         }
 
-        throw new Error("Registration failed");
+        throw new Error("Registration failed - no user data returned");
       } catch (error) {
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        console.error("Registration exception:", error);
+        setAuthState({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+        });
         return {
           success: false,
-          error: error instanceof Error ? error.message : "Registration failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Registration failed. Please try again.",
         };
       }
     },
@@ -147,8 +218,6 @@ export const useAuth = () => {
         isAuthenticated: false,
       });
       //navigation?.replace("Auth");
-      console.log("Navigation Back");
-
       return { success: true };
     } catch (error) {
       return {
@@ -160,6 +229,7 @@ export const useAuth = () => {
 
   const checkAuth = useCallback(async () => {
     try {
+      console.log("Checking authentication status...");
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
       const {
@@ -180,7 +250,7 @@ export const useAuth = () => {
 
       // Handle no session found
       if (!session?.user) {
-        console.log("No active Supabase session found");
+        console.log("No active session found");
         setAuthState({
           user: null,
           isLoading: false,
@@ -188,6 +258,8 @@ export const useAuth = () => {
         });
         return;
       }
+
+      console.log("Session found for user:", session.user.id);
 
       // Session found - fetch user profile
       const { data: profile, error: profileError } = await supabase
@@ -214,6 +286,8 @@ export const useAuth = () => {
         isLoading: false,
         isAuthenticated: true,
       });
+
+      console.log("Auth check completed, user authenticated:", user.email);
     } catch (error) {
       console.error("Auth check error:", error);
       setAuthState({
@@ -221,6 +295,7 @@ export const useAuth = () => {
         isLoading: false,
         isAuthenticated: false,
       });
+      console.log("Auth check completed with error");
     }
   }, []);
 

@@ -13,7 +13,7 @@ const AuthLoadingScreen: React.FC = () => {
       <ActivityIndicator size="large" color={theme.colors.primary} />
       <Text
         variant="bodyLarge"
-        style={[styles.text, { color: theme.colors.onBackground }]}
+        style={[styles.text, { color: theme.colors.text }]}
       >
         Loading...
       </Text>

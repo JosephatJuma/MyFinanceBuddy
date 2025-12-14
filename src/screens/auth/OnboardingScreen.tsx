@@ -34,26 +34,90 @@ const WalletIllustration = ({ color }: { color: string }) => (
     />
     <Rect x="30" y="70" width="140" height="90" rx="12" fill={color} />
     {/* Card Slot */}
-    <Rect x="45" y="45" width="100" height="20" rx="4" fill={color} opacity="0.6" />
+    <Rect
+      x="45"
+      y="45"
+      width="100"
+      height="20"
+      rx="4"
+      fill={color}
+      opacity="0.6"
+    />
     {/* Button/Lock */}
     <Circle cx="145" cy="110" r="12" fill="#fff" opacity="0.9" />
     <Circle cx="145" cy="110" r="6" fill={color} />
     {/* Card Lines */}
-    <Rect x="55" y="95" width="80" height="4" rx="2" fill="#fff" opacity="0.7" />
-    <Rect x="55" y="110" width="60" height="4" rx="2" fill="#fff" opacity="0.7" />
-    <Rect x="55" y="125" width="70" height="4" rx="2" fill="#fff" opacity="0.7" />
+    <Rect
+      x="55"
+      y="95"
+      width="80"
+      height="4"
+      rx="2"
+      fill="#fff"
+      opacity="0.7"
+    />
+    <Rect
+      x="55"
+      y="110"
+      width="60"
+      height="4"
+      rx="2"
+      fill="#fff"
+      opacity="0.7"
+    />
+    <Rect
+      x="55"
+      y="125"
+      width="70"
+      height="4"
+      rx="2"
+      fill="#fff"
+      opacity="0.7"
+    />
   </Svg>
 );
 
 const ChartIllustration = ({ color }: { color: string }) => (
   <Svg width={200} height={200} viewBox="0 0 200 200">
     {/* Chart Background */}
-    <Rect x="30" y="40" width="140" height="120" rx="12" fill={color} opacity="0.1" />
+    <Rect
+      x="30"
+      y="40"
+      width="140"
+      height="120"
+      rx="12"
+      fill={color}
+      opacity="0.1"
+    />
     {/* Bars */}
-    <Rect x="50" y="100" width="20" height="50" rx="4" fill={color} opacity="0.6" />
-    <Rect x="80" y="80" width="20" height="70" rx="4" fill={color} opacity="0.8" />
+    <Rect
+      x="50"
+      y="100"
+      width="20"
+      height="50"
+      rx="4"
+      fill={color}
+      opacity="0.6"
+    />
+    <Rect
+      x="80"
+      y="80"
+      width="20"
+      height="70"
+      rx="4"
+      fill={color}
+      opacity="0.8"
+    />
     <Rect x="110" y="60" width="20" height="90" rx="4" fill={color} />
-    <Rect x="140" y="90" width="20" height="60" rx="4" fill={color} opacity="0.7" />
+    <Rect
+      x="140"
+      y="90"
+      width="20"
+      height="60"
+      rx="4"
+      fill={color}
+      opacity="0.7"
+    />
     {/* Trend Line */}
     <Path
       d="M 45 120 Q 75 100 95 80 T 155 100"

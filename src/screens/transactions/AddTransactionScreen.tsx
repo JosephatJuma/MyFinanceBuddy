@@ -231,6 +231,7 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
               multiline
               numberOfLines={3}
               error={false}
+              maxLength={400}
             />
           </View>
 

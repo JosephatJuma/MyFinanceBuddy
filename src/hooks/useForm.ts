@@ -230,5 +230,6 @@ export const useForm = <T extends FormValues>(config: FormConfig) => {
     validateAll,
     getFieldProps,
     isValid,
+    setValues,
   };
 };

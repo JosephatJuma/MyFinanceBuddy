@@ -5,7 +5,6 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import {
   Text,
@@ -14,7 +13,8 @@ import {
   Button,
   ActivityIndicator,
   Chip,
-  Divider,
+  Card,
+  Surface,
   Icon,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -26,6 +26,9 @@ import { Transaction } from "../../types";
 import { PieChart, BarChart, LineChart } from "react-native-chart-kit";
 import { useFinance } from "../../contexts/FinanceContext";
 import { AbstractChartConfig } from "react-native-chart-kit/dist/AbstractChart";
+import { useDialog } from "../../hooks/useDialog";
+import DateInput from "../../components/forms/DateInput";
+import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 
 type Props = NativeStackScreenProps<ReportsStackParamList, "ReportsDashboard">;
 
@@ -92,8 +95,15 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
   const { theme } = useThemeContext();
   const { user } = useAuthContext();
   const { formatCurrency } = useFinance();
+  const dialog = useDialog();
 
-  const [dateRange, setDateRange] = useState<"1m" | "3m" | "6m" | "1y">("3m");
+  const [dateRange, setDateRange] = useState<
+    "1m" | "3m" | "6m" | "1y" | "custom"
+  >("3m");
+  const [customStartDate, setCustomStartDate] = useState<Date>(
+    new Date(new Date().setMonth(new Date().getMonth() - 3))
+  );
+  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const [viewMode, setViewMode] = useState<"category" | "trend" | "comparison">(
     "category"
@@ -110,9 +120,16 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
     if (user) {
       loadReportData();
     }
-  }, [user, dateRange, selectedCategories]);
+  }, [user, dateRange, selectedCategories, customStartDate, customEndDate]);
 
   const getDateRange = () => {
+    if (dateRange === "custom") {
+      return {
+        startDate: customStartDate.toISOString().split("T")[0],
+        endDate: customEndDate.toISOString().split("T")[0],
+      };
+    }
+
     const now = new Date();
     let startDate: string;
     const endDate = now.toISOString().split("T")[0];
@@ -158,7 +175,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
       }
     } catch (error) {
       console.error("Error loading report data:", error);
-      Alert.alert("Error", "Failed to load report data");
+      dialog.showError("Failed to load report data");
     } finally {
       setLoading(false);
     }
@@ -301,6 +318,17 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
   );
 
   const getDateLabel = (range: string) => {
+    if (range === "custom") {
+      const start = customStartDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      const end = customEndDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      return `${start} - ${end}`;
+    }
     const labels: Record<string, string> = {
       "1m": "Last Month",
       "3m": "Last 3 Months",
@@ -360,412 +388,506 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Icon source="chart-bar" size={28} color={theme.colors.primary} />
-            <Text variant="headlineSmall" style={styles.headerTitle}>
-              Financial Reports
-            </Text>
+          <View style={styles.headerContent}>
+            <View
+              style={[
+                styles.headerIconContainer,
+                //{ backgroundColor: theme.colors.primaryContainer },
+              ]}
+            >
+              <Icon
+                source="chart-line"
+                size={32}
+                color={theme.colors.primary}
+              />
+            </View>
+            <View style={styles.headerText}>
+              <Text variant="headlineSmall" style={styles.headerTitle}>
+                Financial Reports
+              </Text>
+              <Text variant="bodyMedium" style={styles.headerSubtitle}>
+                Analyze your spending patterns
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Filters */}
-        <View style={styles.filtersCard}>
-          <View style={styles.filterHeader}>
-            <Icon source="filter" size={20} color={theme.colors.primary} />
-            <Text variant="titleMedium" style={styles.filterTitle}>
-              Filters
-            </Text>
-          </View>
+        {/* Filters Card */}
+        <Card style={styles.filtersCard}>
+          <Card.Content>
+            <View style={styles.filterHeader}>
+              <Icon
+                source="filter-variant"
+                size={24}
+                color={theme.colors.primary}
+              />
+              <Text variant="titleMedium" style={styles.filterTitle}>
+                Report Filters
+              </Text>
+            </View>
 
-          {/* Date Range */}
-          <View style={styles.filterSection}>
-            <Text variant="labelLarge" style={styles.filterLabel}>
-              Date Range
-            </Text>
-            <Menu
-              visible={dateMenuVisible}
-              onDismiss={() => setDateMenuVisible(false)}
-              anchor={
-                <Button
-                  mode="outlined"
-                  onPress={() => setDateMenuVisible(true)}
-                  icon="calendar"
-                  style={styles.filterButton}
-                >
-                  {getDateLabel(dateRange)}
-                </Button>
-              }
-            >
-              <Menu.Item
-                onPress={() => {
-                  setDateRange("1m");
-                  setDateMenuVisible(false);
-                }}
-                title="Last Month"
-                leadingIcon={dateRange === "1m" ? "check" : undefined}
-              />
-              <Menu.Item
-                onPress={() => {
-                  setDateRange("3m");
-                  setDateMenuVisible(false);
-                }}
-                title="Last 3 Months"
-                leadingIcon={dateRange === "3m" ? "check" : undefined}
-              />
-              <Menu.Item
-                onPress={() => {
-                  setDateRange("6m");
-                  setDateMenuVisible(false);
-                }}
-                title="Last 6 Months"
-                leadingIcon={dateRange === "6m" ? "check" : undefined}
-              />
-              <Menu.Item
-                onPress={() => {
-                  setDateRange("1y");
-                  setDateMenuVisible(false);
-                }}
-                title="Last Year"
-                leadingIcon={dateRange === "1y" ? "check" : undefined}
-              />
-            </Menu>
-          </View>
-
-          {/* View Mode */}
-          <View style={styles.filterSection}>
-            <Text variant="labelLarge" style={styles.filterLabel}>
-              View Mode
-            </Text>
-            <SegmentedButtons
-              value={viewMode}
-              onValueChange={(value) => setViewMode(value as any)}
-              buttons={[
-                { value: "category", label: "Category" },
-                { value: "trend", label: "Trend" },
-                { value: "comparison", label: "Compare" },
-              ]}
-              style={styles.segmentedButtons}
-            />
-          </View>
-
-          {/* Chart Type (only for category view) */}
-          {viewMode === "category" && (
+            {/* Date Range Selector */}
             <View style={styles.filterSection}>
               <Text variant="labelLarge" style={styles.filterLabel}>
-                Chart Type
+                Date Range
+              </Text>
+              <View style={styles.dateRangeButtons}>
+                <SegmentedButtons
+                  value={dateRange}
+                  onValueChange={(value) => setDateRange(value as any)}
+                  buttons={[
+                    { value: "custom", label: "Custom" },
+                    { value: "1m", label: "1M" },
+                    { value: "3m", label: "3M" },
+                    // { value: "6m", label: "6M" },
+                    { value: "1y", label: "1Y" },
+                  ]}
+                  style={styles.segmentedButtons}
+                />
+              </View>
+            </View>
+
+            {/* Custom Date Range Inputs */}
+            {dateRange === "custom" && (
+              <View style={styles.customDateSection}>
+                <Surface
+                  style={[
+                    styles.customDateCard,
+                    //{ backgroundColor: theme.colors.surfaceVariant },
+                  ]}
+                >
+                  <Icon
+                    source="calendar-range"
+                    size={20}
+                    color={theme.colors.primary}
+                  />
+                  <Text variant="bodySmall" style={styles.customDateLabel}>
+                    Select your custom date range
+                  </Text>
+                </Surface>
+                <View style={styles.dateInputsRow}>
+                  <View style={styles.dateInputWrapper}>
+                    <DateInput
+                      label="Start Date"
+                      value={customStartDate}
+                      onChangeText={(value) => setCustomStartDate(value as any)}
+                      mode="outlined"
+                      style={styles.dateInput}
+                    />
+                  </View>
+                  <View style={styles.dateInputWrapper}>
+                    <DateInput
+                      label="End Date"
+                      value={customEndDate}
+                      onChangeText={(value) => setCustomEndDate(value as any)}
+                      mode="outlined"
+                      //minimumDate={customStartDate}
+                      // maximumDate={new Date()}
+                      style={styles.dateInput}
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* View Mode */}
+            <View style={styles.filterSection}>
+              <Text variant="labelLarge" style={styles.filterLabel}>
+                View Mode
               </Text>
               <SegmentedButtons
-                value={chartType}
-                onValueChange={(value) => setChartType(value as any)}
+                value={viewMode}
+                onValueChange={(value) => setViewMode(value as any)}
                 buttons={[
-                  { value: "pie", label: "Pie Chart", icon: "chart-pie" },
-                  { value: "bar", label: "Bar Chart", icon: "chart-bar" },
+                  { value: "category", label: "Category", icon: "chart-pie" },
+                  { value: "trend", label: "Trend", icon: "chart-line" },
+                  { value: "comparison", label: "Compare", icon: "chart-bar" },
                 ]}
                 style={styles.segmentedButtons}
               />
             </View>
-          )}
 
-          {/* Category Filters Toggle */}
-          {allCategories.length > 0 && (
-            <View style={styles.filterSection}>
-              <TouchableOpacity
-                onPress={() => setShowCategoryFilters(!showCategoryFilters)}
-                style={styles.filterToggle}
-              >
-                <View style={styles.filterToggleLeft}>
-                  <Icon
-                    source={
-                      showCategoryFilters ? "chevron-down" : "chevron-right"
-                    }
-                    size={20}
-                    color={theme.colors.primary}
-                  />
-                  <Text variant="labelLarge" style={styles.filterLabel}>
-                    Filter by Categories
-                  </Text>
-                </View>
-                {selectedCategories.length > 0 && (
-                  <Chip
-                    compact
-                    style={styles.categoryCountChip}
-                    textStyle={{ fontSize: 11 }}
-                  >
-                    {selectedCategories.length} selected
-                  </Chip>
-                )}
-              </TouchableOpacity>
+            {/* Chart Type (only for category view) */}
+            {viewMode === "category" && (
+              <View style={styles.filterSection}>
+                <Text variant="labelLarge" style={styles.filterLabel}>
+                  Chart Type
+                </Text>
+                <SegmentedButtons
+                  value={chartType}
+                  onValueChange={(value) => setChartType(value as any)}
+                  buttons={[
+                    { value: "pie", label: "Pie Chart", icon: "chart-pie" },
+                    { value: "bar", label: "Bar Chart", icon: "chart-bar" },
+                  ]}
+                  style={styles.segmentedButtons}
+                />
+              </View>
+            )}
 
-              {showCategoryFilters && (
-                <View style={styles.chipContainer}>
-                  {allCategories.map((category) => (
-                    <Chip
-                      key={category}
-                      selected={
-                        selectedCategories.length === 0 ||
-                        selectedCategories.includes(category)
+            {/* Category Filters Toggle */}
+            {allCategories.length > 0 && (
+              <View style={styles.filterSection}>
+                <TouchableOpacity
+                  onPress={() => setShowCategoryFilters(!showCategoryFilters)}
+                  style={styles.filterToggle}
+                >
+                  <View style={styles.filterToggleLeft}>
+                    <Icon
+                      source={
+                        showCategoryFilters ? "chevron-down" : "chevron-right"
                       }
-                      onPress={() => toggleCategory(category)}
-                      style={styles.chip}
-                    >
-                      {category}
-                    </Chip>
-                  ))}
+                      size={20}
+                      color={theme.colors.primary}
+                    />
+                    <Text variant="labelLarge" style={styles.filterLabel}>
+                      Filter Categories
+                    </Text>
+                  </View>
                   {selectedCategories.length > 0 && (
                     <Chip
-                      onPress={() => setSelectedCategories([])}
-                      style={[styles.chip, styles.clearChip]}
-                      textStyle={{ color: "#ef4444" }}
+                      compact
+                      style={[styles.categoryCountChip]}
+                      textStyle={{ fontSize: 11, color: theme.colors.primary }}
                     >
-                      Clear All
+                      {selectedCategories.length} selected
                     </Chip>
                   )}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
+                </TouchableOpacity>
+
+                {showCategoryFilters && (
+                  <View style={styles.chipContainer}>
+                    {allCategories.map((category) => (
+                      <Chip
+                        key={category}
+                        selected={
+                          selectedCategories.length === 0 ||
+                          selectedCategories.includes(category)
+                        }
+                        onPress={() => toggleCategory(category)}
+                        style={styles.chip}
+                      >
+                        {category}
+                      </Chip>
+                    ))}
+                    {selectedCategories.length > 0 && (
+                      <Chip
+                        onPress={() => setSelectedCategories([])}
+                        style={[styles.chip, styles.clearChip]}
+                        textStyle={{ color: theme.colors.error }}
+                        icon="close"
+                      >
+                        Clear
+                      </Chip>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </Card.Content>
+        </Card>
 
         {/* Charts Section */}
         {viewMode === "category" && (
           <>
             {/* Expenses Chart */}
             {expenseData.length > 0 && (
-              <View style={styles.chartCard}>
-                <View style={styles.chartHeader}>
-                  <Icon source="chart-pie" size={20} color="#ef4444" />
-                  <Text variant="titleMedium" style={styles.chartTitle}>
-                    Expenses by Category
-                  </Text>
-                </View>
-                {chartType === "pie" ? (
-                  <View>
-                    <PieChart
-                      data={expenseData}
-                      width={screenWidth - 64}
-                      height={220}
-                      chartConfig={chartConfig}
-                      accessor="value"
-                      backgroundColor="transparent"
-                      paddingLeft="15"
-                      center={[10, 0]}
-                      absolute
-                      hasLegend={true}
-                    />
+              <Card style={styles.chartCard} elevation={2}>
+                <Card.Content>
+                  <View style={styles.chartHeader}>
+                    <View
+                      style={[
+                        styles.chartIconContainer,
+                        { backgroundColor: "rgba(239, 68, 68, 0.1)" },
+                      ]}
+                    >
+                      <Icon
+                        source="arrow-down-circle"
+                        size={24}
+                        color="#ef4444"
+                      />
+                    </View>
+                    <View style={styles.chartTitleContainer}>
+                      <Text variant="titleMedium" style={styles.chartTitle}>
+                        Expenses by Category
+                      </Text>
+                      <Text variant="bodySmall" style={styles.chartSubtitle}>
+                        {expenseData.length} categories
+                      </Text>
+                    </View>
                   </View>
-                ) : (
-                  <View>
-                    <BarChart
-                      data={{
-                        labels: expenseData.map((d) => {
-                          const cleanName = d.name.replace(/ \d+%$/, "");
-                          return cleanName.substring(0, 6);
-                        }),
-                        datasets: [
-                          {
-                            data: expenseData.map((d) => d.value),
-                            colors: expenseData.map((d) => () => d.color),
-                          },
-                        ],
-                      }}
-                      width={screenWidth - 64}
-                      height={240}
-                      chartConfig={chartConfig}
-                      verticalLabelRotation={30}
-                      //yAxisLabel=""
-                      fromZero
-                      showValuesOnTopOfBars
-                      withInnerLines
-                      style={styles.barChart}
-                    />
-                    <Text variant="bodySmall" style={styles.chartHint}>
-                      💡 Tap legend items to filter categories
-                    </Text>
-                  </View>
-                )}
-              </View>
+                  {chartType === "pie" ? (
+                    <View style={styles.chartWrapper}>
+                      <PieChart
+                        data={expenseData}
+                        width={screenWidth - 64}
+                        height={220}
+                        chartConfig={chartConfig}
+                        accessor="value"
+                        backgroundColor="transparent"
+                        paddingLeft="15"
+                        center={[10, 0]}
+                        absolute
+                        hasLegend={true}
+                      />
+                    </View>
+                  ) : (
+                    <View style={styles.chartWrapper}>
+                      <BarChart
+                        data={{
+                          labels: expenseData.map((d) => {
+                            const cleanName = d.name.replace(/ \d+%$/, "");
+                            return cleanName.substring(0, 6);
+                          }),
+                          datasets: [
+                            {
+                              data: expenseData.map((d) => d.value),
+                              colors: expenseData.map((d) => () => d.color),
+                            },
+                          ],
+                        }}
+                        width={screenWidth - 64}
+                        height={240}
+                        chartConfig={chartConfig}
+                        verticalLabelRotation={30}
+                        fromZero
+                        showValuesOnTopOfBars
+                        withInnerLines
+                        style={styles.barChart}
+                      />
+                    </View>
+                  )}
+                </Card.Content>
+              </Card>
             )}
 
             {/* Income Chart */}
             {incomeData.length > 0 && (
-              <View style={styles.chartCard}>
-                <View style={styles.chartHeader}>
-                  <Icon source="chart-bar" size={20} color="#10b981" />
-                  <Text variant="titleMedium" style={styles.chartTitle}>
-                    Income by Source
-                  </Text>
-                </View>
-                {chartType === "pie" ? (
-                  <View>
-                    <PieChart
-                      data={incomeData}
-                      width={screenWidth - 64}
-                      height={220}
-                      chartConfig={chartConfig}
-                      accessor="value"
-                      backgroundColor="transparent"
-                      paddingLeft="15"
-                      center={[10, 0]}
-                      absolute
-                      hasLegend={true}
-                    />
+              <Card style={styles.chartCard} elevation={2}>
+                <Card.Content>
+                  <View style={styles.chartHeader}>
+                    <View
+                      style={[
+                        styles.chartIconContainer,
+                        { backgroundColor: "rgba(16, 185, 129, 0.1)" },
+                      ]}
+                    >
+                      <Icon
+                        source="arrow-up-circle"
+                        size={24}
+                        color="#10b981"
+                      />
+                    </View>
+                    <View style={styles.chartTitleContainer}>
+                      <Text variant="titleMedium" style={styles.chartTitle}>
+                        Income by Source
+                      </Text>
+                      <Text variant="bodySmall" style={styles.chartSubtitle}>
+                        {incomeData.length} sources
+                      </Text>
+                    </View>
                   </View>
-                ) : (
-                  <View>
-                    <BarChart
-                      data={{
-                        labels: incomeData.map((d) => {
-                          const cleanName = d.name.replace(/ \d+%$/, "");
-                          return cleanName.substring(0, 6);
-                        }),
-                        datasets: [
-                          {
-                            data: incomeData.map((d) => d.value),
-                            colors: incomeData.map((d) => () => d.color),
-                          },
-                        ],
-                      }}
-                      width={screenWidth - 64}
-                      height={240}
-                      chartConfig={chartConfig}
-                      verticalLabelRotation={30}
-                      //yAxisLabel="$"
-                      fromZero
-                      showValuesOnTopOfBars
-                      withInnerLines
-                      style={styles.barChart}
-                    />
-                  </View>
-                )}
-              </View>
+                  {chartType === "pie" ? (
+                    <View style={styles.chartWrapper}>
+                      <PieChart
+                        data={incomeData}
+                        width={screenWidth - 64}
+                        height={220}
+                        chartConfig={chartConfig}
+                        accessor="value"
+                        backgroundColor="transparent"
+                        paddingLeft="15"
+                        center={[10, 0]}
+                        absolute
+                        hasLegend={true}
+                      />
+                    </View>
+                  ) : (
+                    <View style={styles.chartWrapper}>
+                      <BarChart
+                        data={{
+                          labels: incomeData.map((d) => {
+                            const cleanName = d.name.replace(/ \d+%$/, "");
+                            return cleanName.substring(0, 6);
+                          }),
+                          datasets: [
+                            {
+                              data: incomeData.map((d) => d.value),
+                              colors: incomeData.map((d) => () => d.color),
+                            },
+                          ],
+                        }}
+                        width={screenWidth - 64}
+                        height={240}
+                        chartConfig={chartConfig}
+                        verticalLabelRotation={30}
+                        fromZero
+                        showValuesOnTopOfBars
+                        withInnerLines
+                        style={styles.barChart}
+                      />
+                    </View>
+                  )}
+                </Card.Content>
+              </Card>
             )}
           </>
         )}
 
         {viewMode === "trend" && trendData.length > 0 && (
-          <View style={styles.chartCard}>
-            <View style={styles.chartHeader}>
-              <Icon
-                source="chart-line"
-                size={20}
-                color={theme.colors.primary}
-              />
-              <Text variant="titleMedium" style={styles.chartTitle}>
-                Financial Trends Over Time
-              </Text>
-            </View>
-            <View>
-              <LineChart
-                data={{
-                  labels: trendData.map((d) => d.name),
-                  datasets: [
-                    {
-                      data: trendData.map((d) => d.income),
-                      color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                      strokeWidth: 3,
-                    },
-                    {
-                      data: trendData.map((d) => d.expenses),
-                      color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`,
-                      strokeWidth: 3,
-                    },
-                    {
-                      data: trendData.map((d) => d.savings),
-                      color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-                      strokeWidth: 3,
-                    },
-                    {
-                      data: trendData.map((d) => d.investments),
-                      color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
-                      strokeWidth: 3,
-                    },
-                  ],
-                  legend: ["Income", "Expenses", "Savings", "Investments"],
-                }}
-                width={screenWidth - 64}
-                height={280}
-                chartConfig={chartConfig}
-                bezier
-                style={styles.lineChart}
-                //yAxisLabel="$"
-                withDots={true}
-                withShadow={false}
-                withInnerLines={true}
-                withOuterLines={true}
-              />
-              <Text variant="bodySmall" style={styles.chartHint}>
-                💡 Track your financial trends over time
-              </Text>
-            </View>
-          </View>
+          <Card style={styles.chartCard} elevation={2}>
+            <Card.Content>
+              <View style={styles.chartHeader}>
+                <View
+                  style={[
+                    styles.chartIconContainer,
+                    { backgroundColor: theme.colors.primaryContainer },
+                  ]}
+                >
+                  <Icon
+                    source="chart-line"
+                    size={24}
+                    color={theme.colors.primary}
+                  />
+                </View>
+                <View style={styles.chartTitleContainer}>
+                  <Text variant="titleMedium" style={styles.chartTitle}>
+                    Financial Trends
+                  </Text>
+                  <Text variant="bodySmall" style={styles.chartSubtitle}>
+                    Track performance over time
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.chartWrapper}>
+                <LineChart
+                  data={{
+                    labels: trendData.map((d) => d.name),
+                    datasets: [
+                      {
+                        data: trendData.map((d) => d.income),
+                        color: (opacity = 1) =>
+                          `rgba(16, 185, 129, ${opacity})`,
+                        strokeWidth: 3,
+                      },
+                      {
+                        data: trendData.map((d) => d.expenses),
+                        color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`,
+                        strokeWidth: 3,
+                      },
+                      {
+                        data: trendData.map((d) => d.savings),
+                        color: (opacity = 1) =>
+                          `rgba(59, 130, 246, ${opacity})`,
+                        strokeWidth: 3,
+                      },
+                      {
+                        data: trendData.map((d) => d.investments),
+                        color: (opacity = 1) =>
+                          `rgba(139, 92, 246, ${opacity})`,
+                        strokeWidth: 3,
+                      },
+                    ],
+                    legend: ["Income", "Expenses", "Savings", "Investments"],
+                  }}
+                  width={screenWidth - 64}
+                  height={280}
+                  chartConfig={chartConfig}
+                  bezier
+                  style={styles.lineChart}
+                  withDots={true}
+                  withShadow={false}
+                  withInnerLines={true}
+                  withOuterLines={true}
+                />
+              </View>
+            </Card.Content>
+          </Card>
         )}
 
         {viewMode === "comparison" && trendData.length > 0 && (
-          <View style={styles.chartCard}>
-            <View style={styles.chartHeader}>
-              <Icon source="chart-bar" size={20} color="#3b82f6" />
-              <Text variant="titleMedium" style={styles.chartTitle}>
-                Monthly Comparison
-              </Text>
-            </View>
-            <View>
-              <View style={styles.legendContainer}>
-                <View style={styles.legendItem}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: "#10b981" }]}
-                  />
-                  <Text variant="bodySmall">Income</Text>
+          <Card style={styles.chartCard} elevation={2}>
+            <Card.Content>
+              <View style={styles.chartHeader}>
+                <View
+                  style={[
+                    styles.chartIconContainer,
+                    { backgroundColor: "rgba(59, 130, 246, 0.1)" },
+                  ]}
+                >
+                  <Icon source="chart-bar" size={24} color="#3b82f6" />
                 </View>
-                <View style={styles.legendItem}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: "#ef4444" }]}
-                  />
-                  <Text variant="bodySmall">Expenses</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: "#3b82f6" }]}
-                  />
-                  <Text variant="bodySmall">Savings</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: "#8b5cf6" }]}
-                  />
-                  <Text variant="bodySmall">Investments</Text>
+                <View style={styles.chartTitleContainer}>
+                  <Text variant="titleMedium" style={styles.chartTitle}>
+                    Monthly Comparison
+                  </Text>
+                  <Text variant="bodySmall" style={styles.chartSubtitle}>
+                    Compare all categories
+                  </Text>
                 </View>
               </View>
-              <BarChart
-                data={{
-                  labels: trendData.map((d) => d.name),
-                  datasets: [
-                    { data: trendData.map((d) => Math.max(d.income, 0.01)) },
-                    { data: trendData.map((d) => Math.max(d.expenses, 0.01)) },
-                    { data: trendData.map((d) => Math.max(d.savings, 0.01)) },
-                    {
-                      data: trendData.map((d) => Math.max(d.investments, 0.01)),
-                    },
-                  ],
-                }}
-                width={screenWidth - 64}
-                height={260}
-                chartConfig={{
-                  ...chartConfig,
-                  barPercentage: 0.7,
-                }}
-                //yAxisLabel="$"
-                fromZero
-                withInnerLines
-                style={styles.barChart}
-              />
-              <Text variant="bodySmall" style={styles.chartHint}>
-                💡 Compare income vs expenses across months
-              </Text>
-            </View>
-          </View>
+              <View style={styles.chartWrapper}>
+                <View style={styles.legendContainer}>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#10b981" }]}
+                    />
+                    <Text variant="bodySmall">Income</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#ef4444" }]}
+                    />
+                    <Text variant="bodySmall">Expenses</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#3b82f6" }]}
+                    />
+                    <Text variant="bodySmall">Savings</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View
+                      style={[styles.legendDot, { backgroundColor: "#8b5cf6" }]}
+                    />
+                    <Text variant="bodySmall">Investments</Text>
+                  </View>
+                </View>
+                <BarChart
+                  data={{
+                    labels: trendData.map((d) => d.name),
+                    datasets: [
+                      { data: trendData.map((d) => Math.max(d.income, 0.01)) },
+                      {
+                        data: trendData.map((d) => Math.max(d.expenses, 0.01)),
+                      },
+                      { data: trendData.map((d) => Math.max(d.savings, 0.01)) },
+                      {
+                        data: trendData.map((d) =>
+                          Math.max(d.investments, 0.01)
+                        ),
+                      },
+                    ],
+                  }}
+                  width={screenWidth - 64}
+                  height={260}
+                  chartConfig={{
+                    ...chartConfig,
+                    barPercentage: 0.7,
+                  }}
+                  fromZero
+                  withInnerLines
+                  style={styles.barChart}
+                />
+              </View>
+            </Card.Content>
+          </Card>
         )}
 
         {/* Empty State */}
@@ -773,21 +895,32 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
           expenseData.length === 0 &&
           incomeData.length === 0 &&
           trendData.length === 0 && (
-            <View style={styles.emptyContainer}>
-              <Icon
-                source="chart-line"
-                size={64}
-                color={theme.colors.outline}
-              />
-              <Text variant="titleLarge" style={styles.emptyTitle}>
-                No data available
-              </Text>
-              <Text variant="bodyMedium" style={styles.emptyText}>
-                Add transactions to see your financial reports
-              </Text>
-            </View>
+            <Card style={styles.emptyCard} elevation={0}>
+              <Card.Content style={styles.emptyContainer}>
+                <View
+                  style={[
+                    styles.emptyIconContainer,
+                    { backgroundColor: theme.colors.surfaceVariant },
+                  ]}
+                >
+                  <Icon
+                    source="chart-line-variant"
+                    size={64}
+                    color={theme.colors.text}
+                  />
+                </View>
+                <Text variant="titleLarge" style={styles.emptyTitle}>
+                  No data available
+                </Text>
+                <Text variant="bodyMedium" style={styles.emptyText}>
+                  Add transactions to see your financial reports and insights
+                </Text>
+              </Card.Content>
+            </Card>
           )}
       </ScrollView>
+
+      <ConfirmDialog config={dialog.config} />
     </View>
   );
 };
@@ -798,36 +931,51 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 16,
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   centerContent: {
     justifyContent: "center",
     alignItems: "center",
+    padding: 24,
   },
   loadingText: {
     marginTop: 16,
     opacity: 0.6,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
-  headerLeft: {
+  headerContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
+  },
+  headerIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
     fontWeight: "700",
-    marginLeft: 8,
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    opacity: 0.7,
   },
   filtersCard: {
-    backgroundColor: "rgba(128, 128, 128, 0.05)",
+    marginHorizontal: 16,
+    marginVertical: 12,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
+    elevation: 2,
   },
   filterHeader: {
     flexDirection: "row",
@@ -843,6 +991,34 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontWeight: "600",
+    marginBottom: 8,
+  },
+  dateRangeButtons: {
+    marginBottom: 0,
+  },
+  customDateSection: {
+    marginBottom: 16,
+  },
+  customDateCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  customDateLabel: {
+    opacity: 0.8,
+  },
+  dateInputsRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  dateInputWrapper: {
+    flex: 1,
+  },
+  dateInput: {
+    marginBottom: 0,
   },
   filterToggle: {
     flexDirection: "row",
@@ -856,13 +1032,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   categoryCountChip: {
-    backgroundColor: "rgba(98, 0, 238, 0.1)",
-  },
-  filterButton: {
-    marginBottom: 0,
+    // Background color set inline
   },
   segmentedButtons: {
     marginBottom: 0,
+    maxWidth: "100%",
   },
   chipContainer: {
     flexDirection: "row",
@@ -873,34 +1047,46 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   clearChip: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
+    // Style applied inline
   },
   chartCard: {
-    backgroundColor: "rgba(128, 128, 128, 0.05)",
+    marginHorizontal: 16,
+    marginVertical: 12,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
   },
   chartHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 12,
     marginBottom: 16,
+  },
+  chartIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  chartTitleContainer: {
+    flex: 1,
   },
   chartTitle: {
     fontWeight: "600",
+    marginBottom: 2,
+  },
+  chartSubtitle: {
+    opacity: 0.7,
+  },
+  chartWrapper: {
+    alignItems: "center",
   },
   barChart: {
     borderRadius: 16,
+    marginVertical: 8,
   },
   lineChart: {
     borderRadius: 16,
-  },
-  chartHint: {
-    marginTop: 12,
-    textAlign: "center",
-    opacity: 0.6,
-    fontStyle: "italic",
+    marginVertical: 8,
   },
   legendContainer: {
     flexDirection: "row",
@@ -920,21 +1106,35 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderRadius: 16,
+  },
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
   },
   emptyTitle: {
     fontWeight: "600",
-    marginTop: 16,
+    marginTop: 8,
     marginBottom: 8,
     textAlign: "center",
   },
   emptyText: {
     textAlign: "center",
     opacity: 0.6,
+    lineHeight: 20,
   },
 });
 

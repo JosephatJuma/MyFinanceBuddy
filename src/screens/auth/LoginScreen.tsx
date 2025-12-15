@@ -6,13 +6,19 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { Text, Button, Card, Divider, IconButton } from "react-native-paper";
+import {
+  Text,
+  Button,
+  Card,
+  Divider,
+  TextInput as RNPTextInput,
+} from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
-import TextInput from "../../components/forms/TextInput";
+import { TextInput } from "../../components/forms";
 import { useDialog } from "../../hooks/useDialog";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 import Svg, { Path, Circle, Rect } from "react-native-svg";
@@ -37,7 +43,7 @@ const LogoIllustration = ({ color }: { color: string }) => (
     />
     <Rect
       x="45"
-      cy="60"
+      //cy="60"
       width="10"
       height="3"
       rx="1.5"
@@ -124,10 +130,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <Text
               variant="bodyMedium"
-              style={[
-                styles.subtitle,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
+              style={[styles.subtitle, { color: theme.colors.text }]}
             >
               Sign in to continue managing your finances
             </Text>
@@ -139,7 +142,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="email-outline" />}
+              left={<RNPTextInput.Icon icon="email-outline" />}
               style={styles.input}
             />
 
@@ -150,9 +153,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="lock-outline" />}
+              left={<RNPTextInput.Icon icon="lock-outline" />}
               right={
-                <TextInput.Icon
+                <RNPTextInput.Icon
                   icon={showPassword ? "eye-off" : "eye"}
                   onPress={() => setShowPassword(!showPassword)}
                 />

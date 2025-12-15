@@ -6,13 +6,20 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Text, Button, Card, Divider, ProgressBar } from "react-native-paper";
+import {
+  Text,
+  Button,
+  Card,
+  Divider,
+  ProgressBar,
+  TextInput as RNPTextInput,
+} from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useForm } from "../../hooks/useForm";
 import { useThemeContext } from "../../contexts/ThemeContext";
-import TextInput from "../../components/forms/TextInput";
+import { TextInput } from "../../components/forms";
 import { useDialog } from "../../hooks/useDialog";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 
@@ -125,10 +132,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <Text
               variant="bodyMedium"
-              style={[
-                styles.subtitle,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
+              style={[styles.subtitle, { color: theme.colors.text }]}
             >
               Join MyFinanceBuddy and start managing your finances smartly
             </Text>
@@ -139,7 +143,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               mode="outlined"
               {...form.getFieldProps("name")}
               autoCapitalize="words"
-              left={<TextInput.Icon icon="account-outline" />}
+              left={<RNPTextInput.Icon icon="account-outline" />}
               style={styles.input}
             />
 
@@ -151,7 +155,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="email-outline" />}
+              left={<RNPTextInput.Icon icon="email-outline" />}
               style={styles.input}
             />
 
@@ -163,9 +167,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="lock-outline" />}
+              left={<RNPTextInput.Icon icon="lock-outline" />}
               right={
-                <TextInput.Icon
+                <RNPTextInput.Icon
                   icon={showPassword ? "eye-off" : "eye"}
                   onPress={() => setShowPassword(!showPassword)}
                 />
@@ -200,9 +204,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="lock-check-outline" />}
+              left={<RNPTextInput.Icon icon="lock-check-outline" />}
               right={
-                <TextInput.Icon
+                <RNPTextInput.Icon
                   icon={showConfirmPassword ? "eye-off" : "eye"}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 />

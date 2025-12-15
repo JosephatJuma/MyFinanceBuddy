@@ -302,7 +302,15 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ) : (
             recentTransactions.map((transaction) => (
-              <TransactionCard key={transaction.id} transaction={transaction} />
+              <TransactionCard
+                key={transaction.id}
+                transaction={transaction}
+                onPress={() =>
+                  navigation.navigate("TransactionDetail", {
+                    id: transaction.id,
+                  })
+                }
+              />
             ))
           )}
         </View>

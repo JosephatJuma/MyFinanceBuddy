@@ -168,7 +168,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 0,
+    marginBottom: 5,
     elevation: 2,
     borderRadius: 12,
   },

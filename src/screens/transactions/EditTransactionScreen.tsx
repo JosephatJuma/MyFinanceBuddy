@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, TextInput, Button, Card } from "react-native-paper";
+import { Text, Button, Card } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { TransactionsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { useForm } from "../../hooks/useForm";
+import { Transaction } from "../../types";
+import { useAuthContext } from "../../contexts";
+import { supabase } from "../../lib/supabase";
+import { useDialog } from "../../hooks";
+import SelectInput from "../../components/forms/SelectInput";
+import DateInput from "../../components/forms/DateInput";
+import TextInput from "../../components/forms/TextInput";
+import { EXPENSE_CATEGORIES } from "../../constants/options";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -13,23 +21,63 @@ type Props = NativeStackScreenProps<
 
 const EditTransactionScreen: React.FC<Props> = ({ navigation, route }) => {
   const { theme } = useThemeContext();
-  const { id } = route.params;
+  const { id } = route.params as Transaction;
+  const { user } = useAuthContext();
+  const dialog = useDialog();
+
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    loadTransaction();
+  }, []);
+
+  const loadTransaction = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setTransaction(data);
+      }
+    } catch (error) {
+      console.error("Error loading transaction:", error);
+      dialog.showError("Failed to load transaction details");
+      navigation.goBack();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const form = useForm({
     amount: {
-      initialValue: "",
+      initialValue: transaction?.amount,
       validation: {
         required: true,
       },
     },
     description: {
-      initialValue: "",
+      initialValue: transaction?.description || "",
       validation: {
         required: true,
       },
     },
     category: {
-      initialValue: "",
+      initialValue: transaction?.category || "",
+      validation: {
+        required: true,
+      },
+    },
+    date: {
+      initialValue: transaction?.date || new Date(),
       validation: {
         required: true,
       },
@@ -42,6 +90,7 @@ const EditTransactionScreen: React.FC<Props> = ({ navigation, route }) => {
     navigation.goBack();
   });
 
+  // console.log(transaction);
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -52,6 +101,14 @@ const EditTransactionScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text variant="titleLarge" style={styles.title}>
               Edit Transaction
             </Text>
+
+            <SelectInput
+              label="Category"
+              options={EXPENSE_CATEGORIES}
+              mode="outlined"
+              {...form.getFieldProps("category")}
+              style={styles.input}
+            />
 
             <TextInput
               label="Amount"
@@ -68,10 +125,10 @@ const EditTransactionScreen: React.FC<Props> = ({ navigation, route }) => {
               style={styles.input}
             />
 
-            <TextInput
-              label="Category"
+            <DateInput
+              label="Date"
               mode="outlined"
-              {...form.getFieldProps("category")}
+              {...form.getFieldProps("date")}
               style={styles.input}
             />
 

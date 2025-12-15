@@ -1,12 +1,15 @@
 import { View, StyleSheet, TouchableOpacity } from "react-native";
-import React from "react";
-import { Card, Icon, Text } from "react-native-paper";
+import React, { useState } from "react";
+import { Card, Icon, Text, IconButton, Menu } from "react-native-paper";
 import { useFinance } from "../../contexts/FinanceContext";
 import { Transaction } from "../../types";
+import { useThemeContext } from "../../contexts/ThemeContext";
 
 interface TransactionCardProps {
   transaction: Transaction;
   onPress?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const getTransactionConfig = (type: "income" | "expense") => {
@@ -38,15 +41,33 @@ const getTransactionConfig = (type: "income" | "expense") => {
 const TransactionCard: React.FC<TransactionCardProps> = ({
   transaction,
   onPress,
+  onEdit,
+  onDelete,
 }) => {
   const { formatCurrency } = useFinance();
+  const { theme } = useThemeContext();
   const config = getTransactionConfig(transaction.type);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const formattedDate = new Date(transaction.date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+
+  const handleMenuPress = () => {
+    setMenuVisible(!menuVisible);
+  };
+
+  const handleEdit = () => {
+    setMenuVisible(false);
+    onEdit?.();
+  };
+
+  const handleDelete = () => {
+    setMenuVisible(false);
+    onDelete?.();
+  };
 
   const CardWrapper = onPress ? TouchableOpacity : View;
 
@@ -83,22 +104,60 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
           </View>
 
           <View style={styles.rightSection}>
-            <Text
-              variant="titleMedium"
-              style={[styles.amount, { color: config.color }]}
-            >
-              {config.sign}
-              {formatCurrency(parseFloat(transaction.amount.toString()))}
-            </Text>
-            <View
-              style={[styles.typeBadge, { backgroundColor: config.bgColor }]}
-            >
-              <Text
-                variant="labelSmall"
-                style={[styles.typeText, { color: config.color }]}
-              >
-                {transaction.type.toUpperCase()}
-              </Text>
+            <View style={styles.amountRow}>
+              <View style={styles.amountContainer}>
+                <Text
+                  variant="titleMedium"
+                  style={[styles.amount, { color: config.color }]}
+                >
+                  {config.sign}
+                  {formatCurrency(parseFloat(transaction.amount.toString()))}
+                </Text>
+                <View
+                  style={[
+                    styles.typeBadge,
+                    { backgroundColor: config.bgColor },
+                  ]}
+                >
+                  <Text
+                    variant="labelSmall"
+                    style={[styles.typeText, { color: config.color }]}
+                  >
+                    {transaction.type.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+
+              {(onEdit || onDelete) && (
+                <Menu
+                  visible={menuVisible}
+                  onDismiss={() => setMenuVisible(false)}
+                  anchor={
+                    <IconButton
+                      icon="dots-vertical"
+                      size={20}
+                      onPress={handleMenuPress}
+                      style={styles.menuButton}
+                    />
+                  }
+                >
+                  {onEdit && (
+                    <Menu.Item
+                      onPress={handleEdit}
+                      title="Edit"
+                      leadingIcon="pencil"
+                    />
+                  )}
+                  {onDelete && (
+                    <Menu.Item
+                      onPress={handleDelete}
+                      title="Delete"
+                      leadingIcon="delete"
+                      titleStyle={{ color: theme.colors.error }}
+                    />
+                  )}
+                </Menu>
+              )}
             </View>
           </View>
         </Card.Content>
@@ -109,7 +168,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 12,
+    marginBottom: 0,
     elevation: 2,
     borderRadius: 12,
   },
@@ -152,6 +211,14 @@ const styles = StyleSheet.create({
   rightSection: {
     alignItems: "flex-end",
   },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  amountContainer: {
+    alignItems: "flex-end",
+  },
   amount: {
     fontWeight: "700",
     fontSize: 16,
@@ -166,6 +233,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 10,
     letterSpacing: 0.5,
+  },
+  menuButton: {
+    margin: 0,
+    marginLeft: -8,
   },
 });
 

@@ -43,8 +43,8 @@ export interface Transaction {
   category: string;
   description: string;
   date: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Budget {

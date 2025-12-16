@@ -27,9 +27,27 @@ type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
 const ProfileScreen: React.FC<Props> = () => {
   const { theme } = useThemeContext();
-  const { user } = useAuthContext();
+  const [user, setUser] = useState(null);
   const dialog = useDialog();
   const [loading, setLoading] = useState(false);
+
+  const getUserData = async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      console.error("Error fetching user data:", error);
+      return;
+    }
+
+    setUser(user);
+  };
+
+  React.useEffect(() => {
+    getUserData();
+  }, []);
 
   const form = useForm({
     fullName: {
@@ -85,7 +103,7 @@ const ProfileScreen: React.FC<Props> = () => {
           <View
             style={[
               styles.avatarContainer,
-              { backgroundColor: theme.colors.primaryContainer },
+              //{ backgroundColor: theme.colors.primaryContainer },
             ]}
           >
             <Icon source="account" size={60} color={theme.colors.primary} />
@@ -114,7 +132,7 @@ const ProfileScreen: React.FC<Props> = () => {
               <View
                 style={[
                   styles.verifiedBadge,
-                  { backgroundColor: theme.colors.primaryContainer },
+                  //{ backgroundColor: theme.colors.primaryContainer },
                 ]}
               >
                 <Icon
@@ -155,7 +173,6 @@ const ProfileScreen: React.FC<Props> = () => {
               placeholder="Enter your full name"
               mode="outlined"
               {...form.getFieldProps("fullName")}
-              left={<TextInput.Icon icon="account-outline" />}
               style={styles.input}
             />
 
@@ -165,7 +182,6 @@ const ProfileScreen: React.FC<Props> = () => {
               mode="outlined"
               keyboardType="phone-pad"
               {...form.getFieldProps("phone")}
-              left={<TextInput.Icon icon="phone-outline" />}
               style={styles.input}
             />
 
@@ -202,7 +218,7 @@ const ProfileScreen: React.FC<Props> = () => {
                 <Icon
                   source="calendar-clock"
                   size={20}
-                  color={theme.colors.onSurfaceVariant}
+                  color={theme.colors.text}
                 />
                 <Text variant="bodySmall" style={styles.statLabel}>
                   Member Since
@@ -223,7 +239,7 @@ const ProfileScreen: React.FC<Props> = () => {
                 <Icon
                   source="clock-outline"
                   size={20}
-                  color={theme.colors.onSurfaceVariant}
+                  color={theme.colors.text}
                 />
                 <Text variant="bodySmall" style={styles.statLabel}>
                   Last Sign In
@@ -231,12 +247,15 @@ const ProfileScreen: React.FC<Props> = () => {
               </View>
               <Text variant="bodyMedium" style={styles.statValue}>
                 {user?.last_sign_in_at
-                  ? new Date(user.last_sign_in_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
+                  ? new Date(user?.last_sign_in_at).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )
                   : "N/A"}
               </Text>
             </View>
@@ -247,7 +266,7 @@ const ProfileScreen: React.FC<Props> = () => {
         <View
           style={[
             styles.infoCard,
-            { backgroundColor: theme.colors.surfaceVariant },
+            //{ backgroundColor: theme.colors.surfaceVariant },
           ]}
         >
           <Icon source="shield-check" size={20} color={theme.colors.primary} />

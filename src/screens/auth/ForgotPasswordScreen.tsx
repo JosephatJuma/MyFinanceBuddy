@@ -107,10 +107,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <Text
               variant="bodyMedium"
-              style={[
-                styles.subtitle,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
+              style={[styles.subtitle, { color: theme.colors.text }]}
             >
               No worries! Enter your email address and we'll send you
               instructions to reset your password.
@@ -123,7 +120,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              left={<TextInput.Icon icon="email-outline" />}
+              rightIcon="email-outline"
               style={styles.input}
             />
 
@@ -134,7 +131,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               disabled={isLoading || !form.isValid()}
               style={styles.submitButton}
               contentStyle={styles.buttonContent}
-              icon="email-send"
+              icon="send"
             >
               {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>

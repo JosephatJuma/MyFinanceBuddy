@@ -29,11 +29,16 @@ const SettingsMainScreen: React.FC<Props> = ({ navigation }) => {
       "Logout",
       "Are you sure you want to logout? You'll need to sign in again to access your account.",
       async () => {
+        console.log("Loging out");
         const result = await logout();
+        console.log("================", result);
         if (!result.success) {
           dialog.showError(
             result.error || "Failed to logout. Please try again."
           );
+        } else {
+          console.log("Logged out");
+          navigation.replace("AuthStack", { screen: "Onboarding" });
         }
       },
       undefined,

@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Text, Card, FAB, Icon } from "react-native-paper";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  Dimensions,
+} from "react-native";
+import { Text, Card, FAB, Icon, Surface, Button } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
@@ -10,6 +17,7 @@ import { useFinance } from "../../contexts/FinanceContext";
 import { supabase } from "../../lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import TransactionCard from "../../components/reusable/TransactionCard";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Props = NativeStackScreenProps<HomeStackParamList, "Dashboard">;
 
@@ -39,13 +47,22 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
   );
   const [insights, setInsights] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { showFigures, formatCurrency, toggleShowFigures } = useFinance();
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        loadDashboardData();
+      }
+    }, [user])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
 
   const loadDashboardData = async () => {
     if (!user) return;
@@ -188,10 +205,52 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      <ScrollView style={styles.scrollView}>
-        {/* <Text variant="headlineMedium" style={styles.greeting}>
-          Welcome, {user?.name || "User"}!
-        </Text> */}
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Greeting Header */}
+        <Surface style={styles.greetingCard} elevation={0}>
+          <View style={styles.greetingContent}>
+            <View>
+              <Text variant="bodyMedium" style={styles.greetingText}>
+                {(() => {
+                  const hour = new Date().getHours();
+                  if (hour < 12) return "Good Morning";
+                  if (hour < 18) return "Good Afternoon";
+                  return "Good Evening";
+                })()}
+              </Text>
+              <Text variant="headlineSmall" style={styles.userName}>
+                {user?.user_metadata?.full_name ||
+                  user?.email?.split("@")[0] ||
+                  "Guest"}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.greetingIconContainer,
+                { backgroundColor: theme.colors.primaryContainer },
+              ]}
+            >
+              <Icon
+                source="hand-wave"
+                size={28}
+                color={theme.colors.onPrimaryContainer}
+              />
+            </View>
+          </View>
+          <Text variant="bodySmall" style={styles.dateText}>
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </Text>
+        </Surface>
 
         {/* Credit Card Style Balance Card */}
         <LinearGradient
@@ -237,81 +296,243 @@ const DashboardScreen: React.FC<Props> = ({ navigation }) => {
         </LinearGradient>
 
         {insights.length > 0 && (
-          <Card style={styles.card}>
+          <Card style={styles.insightsCard}>
             <Card.Content>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                {stats.netBalance >= 0 ? (
-                  <Icon source={"check-circle"} size={25} color="#4caf50" />
-                ) : (
-                  <Icon source={"alert-circle"} size={25} color="#f44336" />
-                )}
-                <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                  Financial Insights
-                </Text>
-              </View>
-              <View>
-                {insights.map((insight, index) => (
-                  <Text key={index} style={{ marginBottom: 8 }}>
-                    • {insight}
+              <View style={styles.insightsHeader}>
+                <View
+                  style={[
+                    styles.insightsIconContainer,
+                    {
+                      backgroundColor:
+                        stats.netBalance >= 0
+                          ? "rgba(76, 175, 80, 0.1)"
+                          : "rgba(244, 67, 54, 0.1)",
+                    },
+                  ]}
+                >
+                  <Icon
+                    source={
+                      stats.netBalance >= 0 ? "check-circle" : "alert-circle"
+                    }
+                    size={24}
+                    color={stats.netBalance >= 0 ? "#4caf50" : "#f44336"}
+                  />
+                </View>
+                <View style={styles.insightsHeaderText}>
+                  <Text variant="titleMedium">Financial Insights</Text>
+                  <Text variant="bodySmall" style={styles.insightsSubtitle}>
+                    {insights.length} insight{insights.length > 1 ? "s" : ""}{" "}
+                    for you
                   </Text>
+                </View>
+              </View>
+              <View style={styles.insightsList}>
+                {insights.map((insight, index) => (
+                  <View key={index} style={styles.insightItem}>
+                    <Icon
+                      source="circle-small"
+                      size={20}
+                      color={theme.colors.primary}
+                    />
+                    <Text variant="bodyMedium" style={styles.insightText}>
+                      {insight}
+                    </Text>
+                  </View>
                 ))}
               </View>
             </Card.Content>
           </Card>
         )}
 
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text variant="titleMedium">Expenses</Text>
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {formatCurrency(stats?.totalExpenses)}
-            </Text>
-          </Card.Content>
-        </Card>
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <Text variant="titleLarge" style={styles.sectionTitle}>
+            Financial Overview
+          </Text>
 
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text variant="titleMedium">Savings</Text>
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {formatCurrency(stats?.totalSavings)}
-            </Text>
-          </Card.Content>
-        </Card>
+          <View style={styles.statsGrid}>
+            {/* Row 1 */}
+            <View style={styles.statsRow}>
+              <Card style={styles.statCard}>
+                <Card.Content style={styles.statCardContent}>
+                  <View style={styles.statHeader}>
+                    <View
+                      style={[
+                        styles.statIconContainer,
+                        { backgroundColor: "rgba(239, 68, 68, 0.1)" },
+                      ]}
+                    >
+                      <Icon
+                        source="arrow-down-circle"
+                        size={24}
+                        color="#ef4444"
+                      />
+                    </View>
+                    <Text variant="labelLarge" style={styles.statLabel}>
+                      Expenses
+                    </Text>
+                  </View>
+                  <Text
+                    variant="headlineMedium"
+                    style={[styles.statValue, { color: "#ef4444" }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatCurrency(stats?.totalExpenses)}
+                  </Text>
+                </Card.Content>
+              </Card>
 
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text variant="titleMedium">Income</Text>
-            <Text variant="bodyMedium" style={styles.emptyText}>
-              {formatCurrency(stats?.totalIncome)}
-            </Text>
-          </Card.Content>
-        </Card>
+              <Card style={styles.statCard}>
+                <Card.Content style={styles.statCardContent}>
+                  <View style={styles.statHeader}>
+                    <View
+                      style={[
+                        styles.statIconContainer,
+                        { backgroundColor: "rgba(16, 185, 129, 0.1)" },
+                      ]}
+                    >
+                      <Icon
+                        source="arrow-up-circle"
+                        size={24}
+                        color="#10b981"
+                      />
+                    </View>
+                    <Text variant="labelLarge" style={styles.statLabel}>
+                      Income
+                    </Text>
+                  </View>
+                  <Text
+                    variant="headlineMedium"
+                    style={[styles.statValue, { color: "#10b981" }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatCurrency(stats?.totalIncome)}
+                  </Text>
+                </Card.Content>
+              </Card>
+            </View>
 
-        <View>
-          {recentTransactions.length === 0 ? (
+            {/* Row 2 */}
+            <View style={styles.statsRow}>
+              <Card style={styles.statCard}>
+                <Card.Content style={styles.statCardContent}>
+                  <View style={styles.statHeader}>
+                    <View
+                      style={[
+                        styles.statIconContainer,
+                        { backgroundColor: "rgba(59, 130, 246, 0.1)" },
+                      ]}
+                    >
+                      <Icon source="piggy-bank" size={24} color="#3b82f6" />
+                    </View>
+                    <Text variant="labelLarge" style={styles.statLabel}>
+                      Savings
+                    </Text>
+                  </View>
+                  <Text
+                    variant="headlineMedium"
+                    style={[styles.statValue, { color: "#3b82f6" }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatCurrency(stats?.totalSavings)}
+                  </Text>
+                </Card.Content>
+              </Card>
+
+              <Card style={styles.statCard}>
+                <Card.Content style={styles.statCardContent}>
+                  <View style={styles.statHeader}>
+                    <View
+                      style={[
+                        styles.statIconContainer,
+                        { backgroundColor: theme.colors.primaryContainer },
+                      ]}
+                    >
+                      <Icon
+                        source="chart-line-variant"
+                        size={24}
+                        color={theme.colors.onPrimaryContainer}
+                      />
+                    </View>
+                    <Text variant="labelLarge" style={styles.statLabel}>
+                      Investments
+                    </Text>
+                  </View>
+                  <Text
+                    variant="headlineMedium"
+                    style={styles.statValue}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {formatCurrency(stats?.totalInvestments)}
+                  </Text>
+                </Card.Content>
+              </Card>
+            </View>
+          </View>
+        </View>
+
+        {/* Recent Transactions Section */}
+        <View style={styles.transactionsSection}>
+          <View style={styles.transactionsHeader}>
             <View>
-              <Text>
-                No transactions yet. Add your first transaction to get started!
+              <Text variant="titleLarge">Recent Transactions</Text>
+              <Text variant="bodySmall" style={styles.transactionsSubtitle}>
+                Last {recentTransactions.length} transactions
               </Text>
             </View>
+            {recentTransactions.length > 0 && (
+              <Button
+                mode="text"
+                onPress={() => navigation.navigate("Transactions")}
+                compact
+              >
+                View All
+              </Button>
+            )}
+          </View>
+
+          {recentTransactions.length === 0 ? (
+            <Card style={styles.emptyCard}>
+              <Card.Content style={styles.emptyContent}>
+                <View
+                  style={[
+                    styles.emptyIconContainer,
+                    { backgroundColor: theme.colors.surfaceVariant },
+                  ]}
+                >
+                  <Icon
+                    source="receipt-text-outline"
+                    size={48}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </View>
+                <Text variant="titleMedium" style={styles.emptyTitle}>
+                  No transactions yet
+                </Text>
+                <Text variant="bodyMedium" style={styles.emptyDescription}>
+                  Add your first transaction to get started with tracking your
+                  finances!
+                </Text>
+              </Card.Content>
+            </Card>
           ) : (
-            recentTransactions.map((transaction) => (
-              <TransactionCard
-                key={transaction.id}
-                transaction={transaction}
-                onPress={() =>
-                  navigation.navigate("TransactionDetail", {
-                    id: transaction.id,
-                  })
-                }
-              />
-            ))
+            <View style={styles.transactionsList}>
+              {recentTransactions.map((transaction) => (
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  onPress={() =>
+                    navigation.navigate("TransactionDetail", {
+                      id: transaction.id,
+                    })
+                  }
+                />
+              ))}
+            </View>
           )}
         </View>
       </ScrollView>
@@ -333,9 +554,39 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  greeting: {
-    marginBottom: 20,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  greetingCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 16,
+  },
+  greetingContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  greetingText: {
+    opacity: 0.7,
+    marginBottom: 4,
+  },
+  userName: {
     fontWeight: "600",
+    textTransform: "capitalize",
+  },
+  greetingIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dateText: {
+    opacity: 0.6,
   },
   creditCard: {
     borderRadius: 20,
@@ -432,12 +683,127 @@ const styles = StyleSheet.create({
     bottom: -50,
     left: -30,
   },
-  card: {
+  insightsCard: {
+    marginBottom: 24,
+    borderRadius: 16,
+  },
+  insightsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
-  emptyText: {
-    marginTop: 8,
+  insightsIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  insightsHeaderText: {
+    flex: 1,
+  },
+  insightsSubtitle: {
     opacity: 0.6,
+    marginTop: 2,
+  },
+  insightsList: {
+    gap: 8,
+  },
+  insightItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  insightText: {
+    flex: 1,
+    marginLeft: 4,
+    lineHeight: 22,
+  },
+  statsSection: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    marginBottom: 16,
+    fontWeight: "600",
+  },
+  statsGrid: {
+    gap: 12,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 12,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 16,
+    minWidth: (Dimensions.get("window").width - 44) / 2,
+    maxWidth: (Dimensions.get("window").width - 44) / 2,
+  },
+  statCardContent: {
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+  },
+  statHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  statLabel: {
+    fontWeight: "600",
+    flex: 1,
+  },
+  statValue: {
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  transactionsSection: {
+    marginBottom: 80,
+  },
+  transactionsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  transactionsSubtitle: {
+    opacity: 0.6,
+    marginTop: 2,
+  },
+  transactionsList: {
+    gap: 8,
+  },
+  emptyCard: {
+    borderRadius: 16,
+  },
+  emptyContent: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+  emptyIconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  emptyDescription: {
+    textAlign: "center",
+    opacity: 0.6,
+    maxWidth: 280,
   },
   fab: {
     position: "absolute",

@@ -6,14 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import {
-  Text,
-  Button,
-  Card,
-  Divider,
-  ProgressBar,
-  TextInput as RNPTextInput,
-} from "react-native-paper";
+import { Text, Button, Card, Divider, ProgressBar } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -143,7 +136,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               mode="outlined"
               {...form.getFieldProps("name")}
               autoCapitalize="words"
-              left={<RNPTextInput.Icon icon="account-outline" />}
+              rightIcon="account-outline"
               style={styles.input}
             />
 
@@ -155,7 +148,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              left={<RNPTextInput.Icon icon="email-outline" />}
+              rightIcon="email-outline"
               style={styles.input}
             />
 
@@ -167,14 +160,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<RNPTextInput.Icon icon="lock-outline" />}
-              right={
-                <RNPTextInput.Icon
-                  icon={showPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              }
+              isPass={true}
               style={styles.input}
+              rightIcon="lock"
             />
 
             {form.values.password && (
@@ -204,14 +192,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<RNPTextInput.Icon icon="lock-check-outline" />}
-              right={
-                <RNPTextInput.Icon
-                  icon={showConfirmPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                />
-              }
+              isPass={true}
               style={styles.input}
+              rightIcon="lock"
             />
 
             {/* Helper Text */}

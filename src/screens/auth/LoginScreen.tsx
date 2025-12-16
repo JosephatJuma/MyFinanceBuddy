@@ -6,13 +6,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import {
-  Text,
-  Button,
-  Card,
-  Divider,
-  TextInput as RNPTextInput,
-} from "react-native-paper";
+import { Text, Button, Card, Divider } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/types";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -142,7 +136,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
-              left={<RNPTextInput.Icon icon="email-outline" />}
+              rightIcon="email-outline"
               style={styles.input}
             />
 
@@ -153,13 +147,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoCorrect={false}
-              left={<RNPTextInput.Icon icon="lock-outline" />}
-              right={
-                <RNPTextInput.Icon
-                  icon={showPassword ? "eye-off" : "eye"}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              }
+              isPass={true}
+              rightIcon="lock-outline"
               style={styles.input}
             />
 

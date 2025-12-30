@@ -23,6 +23,8 @@ import {
 import TextInput from "../../components/forms/TextInput";
 import SelectInput from "../../components/forms/SelectInput";
 import DateInput from "../../components/forms/DateInput";
+import HomeHeader from "../../components/reusable/HomeHeader";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -103,23 +105,12 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
+      <Header title="Add Transaction" />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <IconButton
-            icon="close"
-            size={24}
-            onPress={() => navigation.goBack()}
-          />
-          <Text variant="headlineSmall" style={styles.title}>
-            Add Transaction
-          </Text>
-          <View style={{ width: 40 }} />
-        </View>
-
         <View style={styles.form}>
           {/* Type Selector */}
           <View style={styles.section}>

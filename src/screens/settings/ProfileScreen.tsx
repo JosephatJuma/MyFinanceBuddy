@@ -22,6 +22,7 @@ import { useDialog } from "../../hooks/useDialog";
 import TextInput from "../../components/forms/TextInput";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
 import { supabase } from "../../lib/supabase";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Profile">;
 
@@ -87,10 +88,8 @@ const ProfileScreen: React.FC<Props> = () => {
   });
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <View style={styles.container}>
+      <Header title="Profile" />
       <ScrollView
         style={[
           styles.scrollView,
@@ -277,7 +276,7 @@ const ProfileScreen: React.FC<Props> = () => {
       </ScrollView>
 
       <ConfirmDialog config={dialog.config} />
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

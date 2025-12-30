@@ -26,6 +26,7 @@ import { supabase } from "../../lib/supabase";
 import { useFinance } from "../../contexts/FinanceContext";
 import { useDialog } from "../../hooks/useDialog";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -181,25 +182,7 @@ const TransactionDetailScreen: React.FC<Props> = ({ navigation, route }) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
-        <IconButton
-          icon="arrow-left"
-          size={24}
-          onPress={() => navigation.goBack()}
-        />
-        <Text variant="titleLarge" style={styles.headerTitle}>
-          Transaction Details
-        </Text>
-        <IconButton
-          icon="pencil"
-          size={24}
-          onPress={() =>
-            navigation.navigate("EditTransaction", {
-              id: id,
-            })
-          }
-        />
-      </View>
+      <Header title="Transaction Details" />
 
       <ScrollView style={styles.scrollView}>
         {/* Amount Card */}

@@ -9,11 +9,14 @@ import {
   Card,
   Icon,
   Surface,
+  Appbar,
 } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SettingsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
 import { ColorPalette } from "../../hooks/useTheme";
+import { useNavigation } from "@react-navigation/native";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Preferences">;
 
@@ -26,7 +29,7 @@ const PreferencesScreen: React.FC<Props> = () => {
     changeColorPalette,
     getAllPalettes,
   } = useThemeContext();
-
+  const navigation = useNavigation();
   const palettes = getAllPalettes();
 
   return (
@@ -34,6 +37,7 @@ const PreferencesScreen: React.FC<Props> = () => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       contentContainerStyle={styles.scrollContent}
     >
+      <Header title="Preferences" />
       {/* Header Section */}
       <View style={styles.header}>
         <Icon source="palette" size={40} color={theme.colors.primary} />

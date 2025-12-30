@@ -12,6 +12,8 @@ import { useDialog } from "../../hooks";
 import { SelectInput, DateInput, TextInput } from "../../components/forms";
 import { EXPENSE_CATEGORIES } from "../../constants/options";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
+import HomeHeader from "../../components/reusable/HomeHeader";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -162,6 +164,7 @@ const EditTransactionScreen: React.FC<Props> = ({ navigation, route }) => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
+      <Header title="Edit Transaction" />
       <ScrollView style={styles.scrollView}>
         <Card style={styles.card}>
           <Card.Content>

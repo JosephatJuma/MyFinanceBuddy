@@ -4,6 +4,7 @@ import { Text } from "react-native-paper";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SettingsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<SettingsStackParamList, "Security">;
 
@@ -14,6 +15,7 @@ const SecurityScreen: React.FC<Props> = () => {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
+      <Header title="Security" />
       <Text>Security Screen</Text>
     </View>
   );

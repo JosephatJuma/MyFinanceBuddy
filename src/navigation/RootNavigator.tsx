@@ -16,6 +16,7 @@ import { TabNavigator } from "./TabNavigator";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useThemeContext } from "../contexts/ThemeContext";
 import AuthLoadingScreen from "../components/reusable/AuthLoadingScreen";
+import MainNavigator from "./MainNavigator";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -37,9 +38,7 @@ export const RootNavigator = () => {
           <Stack.Screen
             name="Main"
             key={`main-${mainNavigator}`}
-            component={
-              mainNavigator === "drawer" ? DrawerNavigator : TabNavigator
-            }
+            component={MainNavigator}
           />
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />

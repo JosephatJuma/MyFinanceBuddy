@@ -4,13 +4,13 @@ import { DrawerParamList } from "./types";
 import { Ionicons } from "@expo/vector-icons";
 
 // Import stack navigators
-import { HomeStackNavigator } from "./HomeStackNavigator";
-import { TransactionsStackNavigator } from "./TransactionsStackNavigator";
-import { BudgetStackNavigator } from "./BudgetStackNavigator";
-import { ReportsStackNavigator } from "./ReportsStackNavigator";
-import { SettingsStackNavigator } from "./SettingsStackNavigator";
 import { useTheme } from "react-native-paper";
 import HomeHeader from "../components/reusable/HomeHeader";
+import BudgetListScreen from "../screens/budget/BudgetListScreen";
+import TransactionsListScreen from "../screens/transactions/TransactionsListScreen";
+import SettingsMainScreen from "../screens/settings/SettingsMainScreen";
+import DashboardScreen from "../screens/home/DashboardScreen";
+import ReportsDashboardScreen from "../screens/reports/ReportsDashboardScreen";
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 export const DrawerNavigator = () => {
@@ -33,7 +33,7 @@ export const DrawerNavigator = () => {
     >
       <Drawer.Screen
         name="Home"
-        component={HomeStackNavigator}
+        component={DashboardScreen}
         options={{
           drawerLabel: "Home",
           drawerIcon: ({ color, size }) => (
@@ -43,7 +43,7 @@ export const DrawerNavigator = () => {
       />
       <Drawer.Screen
         name="Transactions"
-        component={TransactionsStackNavigator}
+        component={TransactionsListScreen}
         options={{
           drawerLabel: "Transactions",
           drawerIcon: ({ color, size }) => (
@@ -53,7 +53,7 @@ export const DrawerNavigator = () => {
       />
       <Drawer.Screen
         name="Budget"
-        component={BudgetStackNavigator}
+        component={BudgetListScreen}
         options={{
           drawerLabel: "Budget",
           drawerIcon: ({ color, size }) => (
@@ -63,7 +63,7 @@ export const DrawerNavigator = () => {
       />
       <Drawer.Screen
         name="Reports"
-        component={ReportsStackNavigator}
+        component={ReportsDashboardScreen}
         options={{
           drawerLabel: "Reports",
           drawerIcon: ({ color, size }) => (
@@ -73,7 +73,7 @@ export const DrawerNavigator = () => {
       />
       <Drawer.Screen
         name="Settings"
-        component={SettingsStackNavigator}
+        component={SettingsMainScreen}
         options={{
           drawerLabel: "Settings",
           drawerIcon: ({ color, size }) => (

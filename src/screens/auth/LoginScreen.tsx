@@ -52,7 +52,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { theme } = useThemeContext();
   const dialog = useDialog();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     email: {
@@ -67,6 +66,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       validation: {
         required: true,
         minLength: 6,
+        maxLength: 100,
       },
     },
   });
@@ -144,7 +144,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               label="Password"
               mode="outlined"
               {...form.getFieldProps("password")}
-              secureTextEntry={!showPassword}
               autoCapitalize="none"
               autoCorrect={false}
               isPass={true}

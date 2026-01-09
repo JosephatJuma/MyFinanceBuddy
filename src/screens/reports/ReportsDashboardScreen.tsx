@@ -106,10 +106,12 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
     "1m" | "3m" | "6m" | "1y" | "custom"
   >("3m");
   const [customStartDate, setCustomStartDate] = useState<string>(
-    new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString().split('T')[0]
+    new Date(new Date().setMonth(new Date().getMonth() - 3))
+      .toISOString()
+      .split("T")[0]
   );
   const [customEndDate, setCustomEndDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0]
   );
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const [viewMode, setViewMode] = useState<"category" | "trend" | "comparison">(
@@ -485,7 +487,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
       const fileUri = `${FileSystem.documentDirectory}${fileName}`;
 
       await FileSystem.writeAsStringAsync(fileUri, csvContent, {
-        encoding: 'utf8',
+        encoding: "utf8",
       });
 
       // Share the file
@@ -503,10 +505,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
         );
       }
 
-      dialog.showSuccess(
-        "Report exported successfully!",
-        "Export Complete"
-      );
+      dialog.showSuccess("Report exported successfully!", "Export Complete");
     } catch (error: any) {
       console.error("Export error:", error);
       dialog.showError(
@@ -781,11 +780,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
             <Card.Content>
               <View style={styles.exportContainer}>
                 <View style={styles.exportLeft}>
-                  <Icon
-                    source="file-excel"
-                    size={32}
-                    color="#217346"
-                  />
+                  <Icon source="file-excel" size={32} color="#217346" />
                   <View style={styles.exportTextContainer}>
                     <Text variant="titleMedium" style={styles.exportTitle}>
                       Export to CSV

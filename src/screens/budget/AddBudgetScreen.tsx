@@ -12,6 +12,7 @@ import SelectInput from "../../components/forms/SelectInput";
 import { EXPENSE_CATEGORIES } from "../../constants/options";
 import { useDialog } from "../../hooks/useDialog";
 import ConfirmDialog from "../../components/reusable/ConfirmDialog";
+import Header from "../../components/reusable/Header";
 
 type Props = NativeStackScreenProps<BudgetStackParamList, "AddBudget">;
 
@@ -88,18 +89,7 @@ const AddBudgetScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <IconButton
-            icon="arrow-left"
-            size={24}
-            onPress={() => navigation.goBack()}
-          />
-          <Text variant="headlineSmall" style={styles.headerTitle}>
-            Add Budget
-          </Text>
-        </View>
-      </View>
+      <Header title="Add Budget" />
 
       <ScrollView style={styles.scrollView}>
         {/* Info Card */}

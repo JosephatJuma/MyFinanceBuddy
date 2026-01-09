@@ -27,13 +27,12 @@ export const TabNavigator = () => {
           borderTopWidth: 0,
         },
       }}
-      initialRouteName="Home"
+      initialRouteName="Dashboard"
     >
       <Tab.Screen
-        name="Home"
+        name="Dashboard"
         component={DashboardScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
+        options={{          tabBarLabel: "Home",          tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}

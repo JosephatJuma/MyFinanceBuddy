@@ -19,9 +19,9 @@ const Stack = createNativeStackNavigator();
 const MainNavigator = () => {
   const { themeMode, mainNavigator } = useThemeContext();
   return (
-    <Stack.Navigator id="root" screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
-        name="Main"
+        name="AppTabs"
         key={`main-${mainNavigator}`}
         component={mainNavigator === "drawer" ? DrawerNavigator : TabNavigator}
       />

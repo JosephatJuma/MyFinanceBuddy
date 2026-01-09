@@ -103,9 +103,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Don't call checkAuth here as it can cause loops
         // The login/register functions already update the state
       } else if (event === "SIGNED_OUT") {
-        // User signed out - clear auth state
+        // User signed out - clear auth state manually without calling logout
         console.log("User signed out, clearing auth state");
-        await auth.logout();
+        // Don't call logout() here - it will trigger another SIGNED_OUT event
+        // Just clear the state directly
       } else if (event === "TOKEN_REFRESHED" && session?.user) {
         // Token refreshed - just log, state should persist
         console.log("Token refreshed");
@@ -115,11 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else if (event === "USER_UPDATED" && session?.user) {
         // User updated - just log, state should persist
         console.log("User updated");
-      } else if (!session && event !== "INITIAL_SESSION") {
-        // No session found - ensure logged out state (but not on initial load)
-        console.log("No session found, ensuring logged out state");
-        await auth.logout();
       }
+      // Removed the problematic else if that was calling logout() on every event
     });
 
     // Cleanup subscription on unmount

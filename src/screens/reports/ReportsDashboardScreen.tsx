@@ -5,6 +5,9 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
+  Alert,
+  Share,
+  Platform,
 } from "react-native";
 import {
   Text,
@@ -17,6 +20,8 @@ import {
   Surface,
   Icon,
 } from "react-native-paper";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ReportsStackParamList } from "../../navigation/types";
 import { useThemeContext } from "../../contexts/ThemeContext";
@@ -100,10 +105,12 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
   const [dateRange, setDateRange] = useState<
     "1m" | "3m" | "6m" | "1y" | "custom"
   >("3m");
-  const [customStartDate, setCustomStartDate] = useState<Date>(
-    new Date(new Date().setMonth(new Date().getMonth() - 3))
+  const [customStartDate, setCustomStartDate] = useState<string>(
+    new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString().split('T')[0]
   );
-  const [customEndDate, setCustomEndDate] = useState<Date>(new Date());
+  const [customEndDate, setCustomEndDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const [viewMode, setViewMode] = useState<"category" | "trend" | "comparison">(
     "category"
@@ -115,6 +122,7 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
   const [incomeData, setIncomeData] = useState<CategoryData[]>([]);
   const [trendData, setTrendData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -125,8 +133,8 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
   const getDateRange = () => {
     if (dateRange === "custom") {
       return {
-        startDate: customStartDate.toISOString().split("T")[0],
-        endDate: customEndDate.toISOString().split("T")[0],
+        startDate: customStartDate,
+        endDate: customEndDate,
       };
     }
 
@@ -134,16 +142,15 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
     let startDate: string;
     const endDate = now.toISOString().split("T")[0];
 
-    const monthsBack =
-      dateRange === "1m"
-        ? 1
-        : dateRange === "3m"
-        ? 3
-        : dateRange === "6m"
-        ? 6
-        : 12;
-    const start = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
-    startDate = start.toISOString().split("T")[0];
+    if (dateRange === "1m") {
+      // Get first day of current month
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      startDate = start.toISOString().split("T")[0];
+    } else {
+      const monthsBack = dateRange === "3m" ? 3 : dateRange === "6m" ? 6 : 12;
+      const start = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
+      startDate = start.toISOString().split("T")[0];
+    }
 
     return { startDate, endDate };
   };
@@ -319,23 +326,196 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
 
   const getDateLabel = (range: string) => {
     if (range === "custom") {
-      const start = customStartDate.toLocaleDateString("en-US", {
+      const start = new Date(customStartDate).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       });
-      const end = customEndDate.toLocaleDateString("en-US", {
+      const end = new Date(customEndDate).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       });
       return `${start} - ${end}`;
     }
     const labels: Record<string, string> = {
-      "1m": "Last Month",
+      "1m": "This Month",
       "3m": "Last 3 Months",
       "6m": "Last 6 Months",
       "1y": "Last Year",
     };
     return labels[range] || "Last 3 Months";
+  };
+
+  const exportToCSV = async () => {
+    setExporting(true);
+    try {
+      const { startDate, endDate } = getDateRange();
+
+      // Fetch all transactions for the period
+      const { data: transactions } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user?.id)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false });
+
+      if (!transactions || transactions.length === 0) {
+        Alert.alert(
+          "No Data",
+          "No transactions found for the selected period."
+        );
+        return;
+      }
+
+      // Calculate totals by type
+      const income = transactions.filter((t) => t.type === "income");
+      const expenses = transactions.filter((t) => t.type === "expense");
+      const savings = transactions.filter((t) => t.type === "saving");
+      const investments = transactions.filter((t) => t.type === "investment");
+
+      const totalIncome = income.reduce(
+        (sum, t) => sum + parseFloat(t.amount.toString()),
+        0
+      );
+      const totalExpenses = expenses.reduce(
+        (sum, t) => sum + parseFloat(t.amount.toString()),
+        0
+      );
+      const totalSavings = savings.reduce(
+        (sum, t) => sum + parseFloat(t.amount.toString()),
+        0
+      );
+      const totalInvestments = investments.reduce(
+        (sum, t) => sum + parseFloat(t.amount.toString()),
+        0
+      );
+
+      // Create CSV content
+      let csvContent = "";
+
+      // Summary Section
+      csvContent += "Financial Report Summary\n";
+      csvContent += `Period:,${startDate} to ${endDate}\n`;
+      csvContent += `Generated:,${new Date().toLocaleString()}\n`;
+      csvContent += "\n";
+      csvContent += "Category,Amount (UGX)\n";
+      csvContent += `Total Income,${totalIncome.toFixed(2)}\n`;
+      csvContent += `Total Expenses,${totalExpenses.toFixed(2)}\n`;
+      csvContent += `Total Savings,${totalSavings.toFixed(2)}\n`;
+      csvContent += `Total Investments,${totalInvestments.toFixed(2)}\n`;
+      csvContent += `Net Balance,${(totalIncome - totalExpenses).toFixed(2)}\n`;
+      csvContent += "\n\n";
+
+      // Income Details
+      if (income.length > 0) {
+        csvContent += "INCOME DETAILS\n";
+        csvContent += "Date,Category,Description,Amount (UGX)\n";
+        income.forEach((t) => {
+          const desc = (t.description || "").replace(/,/g, ";");
+          csvContent += `${t.date},${t.category},${desc},${parseFloat(
+            t.amount.toString()
+          ).toFixed(2)}\n`;
+        });
+        csvContent += `,,Total Income:,${totalIncome.toFixed(2)}\n`;
+        csvContent += "\n\n";
+      }
+
+      // Expense Details
+      if (expenses.length > 0) {
+        csvContent += "EXPENSE DETAILS\n";
+        csvContent += "Date,Category,Description,Amount (UGX)\n";
+        expenses.forEach((t) => {
+          const desc = (t.description || "").replace(/,/g, ";");
+          csvContent += `${t.date},${t.category},${desc},${parseFloat(
+            t.amount.toString()
+          ).toFixed(2)}\n`;
+        });
+        csvContent += `,,Total Expenses:,${totalExpenses.toFixed(2)}\n`;
+        csvContent += "\n\n";
+      }
+
+      // Savings Details
+      if (savings.length > 0) {
+        csvContent += "SAVINGS DETAILS\n";
+        csvContent += "Date,Category,Description,Amount (UGX)\n";
+        savings.forEach((t) => {
+          const desc = (t.description || "").replace(/,/g, ";");
+          csvContent += `${t.date},${t.category},${desc},${parseFloat(
+            t.amount.toString()
+          ).toFixed(2)}\n`;
+        });
+        csvContent += `,,Total Savings:,${totalSavings.toFixed(2)}\n`;
+        csvContent += "\n\n";
+      }
+
+      // Investments Details
+      if (investments.length > 0) {
+        csvContent += "INVESTMENTS DETAILS\n";
+        csvContent += "Date,Category,Description,Amount (UGX)\n";
+        investments.forEach((t) => {
+          const desc = (t.description || "").replace(/,/g, ";");
+          csvContent += `${t.date},${t.category},${desc},${parseFloat(
+            t.amount.toString()
+          ).toFixed(2)}\n`;
+        });
+        csvContent += `,,Total Investments:,${totalInvestments.toFixed(2)}\n`;
+        csvContent += "\n\n";
+      }
+
+      // Category Breakdown
+      csvContent += "CATEGORY BREAKDOWN\n\n";
+      csvContent += "Expense Categories\n";
+      csvContent += "Category,Amount (UGX),Percentage\n";
+      expenseData.forEach((d) => {
+        csvContent += `${d.name.replace(/ \d+%$/, "")},${d.value.toFixed(
+          2
+        )},${d.percentage.toFixed(2)}%\n`;
+      });
+      csvContent += "\n";
+      csvContent += "Income Sources\n";
+      csvContent += "Source,Amount (UGX),Percentage\n";
+      incomeData.forEach((d) => {
+        csvContent += `${d.name.replace(/ \d+%$/, "")},${d.value.toFixed(
+          2
+        )},${d.percentage.toFixed(2)}%\n`;
+      });
+
+      // Save to file
+      const fileName = `financial_report_${startDate}_to_${endDate}.csv`;
+      const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+
+      await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+        encoding: 'utf8',
+      });
+
+      // Share the file
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "text/csv",
+          dialogTitle: "Export Financial Report",
+          UTI: "public.comma-separated-values-text",
+        });
+      } else {
+        Alert.alert(
+          "Export Complete",
+          `Report saved to: ${fileName}\n\nYou can find it in your app's documents folder.`
+        );
+      }
+
+      dialog.showSuccess(
+        "Report exported successfully!",
+        "Export Complete"
+      );
+    } catch (error: any) {
+      console.error("Export error:", error);
+      dialog.showError(
+        error?.message || "Failed to export report",
+        "Export Failed"
+      );
+    } finally {
+      setExporting(false);
+    }
   };
 
   const chartConfig: AbstractChartConfig = {
@@ -592,6 +772,44 @@ const ReportsDashboardScreen: React.FC<Props> = () => {
             )}
           </Card.Content>
         </Card>
+
+        {/* Export Button */}
+        {(expenseData.length > 0 ||
+          incomeData.length > 0 ||
+          trendData.length > 0) && (
+          <Card style={styles.exportCard} elevation={1}>
+            <Card.Content>
+              <View style={styles.exportContainer}>
+                <View style={styles.exportLeft}>
+                  <Icon
+                    source="file-excel"
+                    size={32}
+                    color="#217346"
+                  />
+                  <View style={styles.exportTextContainer}>
+                    <Text variant="titleMedium" style={styles.exportTitle}>
+                      Export to CSV
+                    </Text>
+                    <Text variant="bodySmall" style={styles.exportSubtitle}>
+                      Download report for {getDateLabel(dateRange)}
+                    </Text>
+                  </View>
+                </View>
+                <Button
+                  mode="contained"
+                  onPress={exportToCSV}
+                  loading={exporting}
+                  disabled={exporting}
+                  icon="download"
+                  style={styles.exportButton}
+                  buttonColor="#217346"
+                >
+                  Export
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
+        )}
 
         {/* Charts Section */}
         {viewMode === "category" && (
@@ -1135,6 +1353,39 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.6,
     lineHeight: 20,
+  },
+  exportCard: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(33, 115, 70, 0.2)",
+  },
+  exportContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  exportLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  exportTextContainer: {
+    flex: 1,
+  },
+  exportTitle: {
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  exportSubtitle: {
+    opacity: 0.7,
+    lineHeight: 18,
+  },
+  exportButton: {
+    borderRadius: 8,
   },
 });
 

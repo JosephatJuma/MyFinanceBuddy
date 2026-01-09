@@ -50,6 +50,7 @@ export default function App() {
           ? "height"
           : undefined
       }
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       style={styles.container}
     >
       <GestureHandlerRootView style={styles.container}>

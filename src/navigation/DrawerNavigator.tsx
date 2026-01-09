@@ -29,10 +29,10 @@ export const DrawerNavigator = () => {
         swipeEdgeWidth: 300,
         drawerInactiveTintColor: colors.primary,
       }}
-      initialRouteName="Home"
+      initialRouteName="Dashboard"
     >
       <Drawer.Screen
-        name="Home"
+        name="Dashboard"
         component={DashboardScreen}
         options={{
           drawerLabel: "Home",
